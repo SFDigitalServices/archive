@@ -51,10 +51,10 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         console.log('archived:', archived)
         const redirectUrl = archived.url
         context.res = {
-            status: 200,
-            body: `Redirect to: ${redirectUrl}`,
+            status: 301,
+            body: `Redirect: "${redirectUrl}"`,
             headers: {
-                'X-Location': redirectUrl
+                Location: redirectUrl
             }
         };
     } else {
