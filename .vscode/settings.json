@@ -1,9 +1,10 @@
 {
-  "azure.tenant": "22d5c2cf-ce3e-443d-9a7f-dfcc0231f73f",
   "azureFunctions.deploySubpath": ".",
+  "azureFunctions.preDeployTask": "npm prune (functions)",
   "azureFunctions.postDeployTask": "npm install (functions)",
   "azureFunctions.projectLanguage": "TypeScript",
   "azureFunctions.projectRuntime": "~4",
-  "debug.internalConsoleOptions": "neverOpen",
-  "azureFunctions.preDeployTask": "npm prune (functions)"
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml"
+  }
 }

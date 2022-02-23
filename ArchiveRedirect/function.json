@@ -1,20 +1,18 @@
 {
+  "scriptFile": "../dist/ArchiveRedirect/index.js",
   "bindings": [
     {
       "authLevel": "function",
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": [
-        "get",
-        "post"
-      ]
+      "methods": ["get"],
+      "route": "url/{*url}"
     },
     {
       "type": "http",
       "direction": "out",
       "name": "res"
     }
-  ],
-  "scriptFile": "../dist/ArchiveRedirect/index.js"
+  ]
 }
