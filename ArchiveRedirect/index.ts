@@ -49,7 +49,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     const archived: ArchiveSnapshot = await getArchived(url)
     if (archived) {
         console.log('archived:', archived)
-        const redirectUrl = archived.url
+        const redirectUrl = getSecureUrl(archived.url)
         context.res = {
             status: 301,
             body: `Redirect: "${redirectUrl}"`,
@@ -73,4 +73,10 @@ function getRequestUrl (req: HttpRequest) {
 
 function getRawQueryString (url: string): string {
     return url.includes('?') ? url.substring(url.indexOf('?') + 1) : undefined
+}
+
+function getSecureUrl (url: string): string {
+    const obj: URL = new URL(url)
+    obj.protocol = 'https'
+    return obj.toString()
 }
