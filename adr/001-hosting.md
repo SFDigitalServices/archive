@@ -1,7 +1,7 @@
 # Hosting
 
-* Status: accepted
-* Deciders: [Shawn Allen](https://github.com/shawnbot)
+* Status: proposed
+* Deciders: [Shawn Allen](https://github.com/shawnbot), [HuiRan Shao](https://github.com/hshaosf)
 * Date: 2022-03-01
 
 ## Context and Problem Statement
