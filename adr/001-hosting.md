@@ -56,10 +56,10 @@ Chosen option: **Heroku**
 * Good, because Microsoft offers great enterprise support
 * Good, because [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview) might serve our monitoring/alert needs out of the box
 * Good, because [function proxies](https://docs.microsoft.com/en-us/azure/azure-functions/functions-proxies) may offer a nice management UI for redirect rules
+* Good, because functions [scale automatically](https://docs.microsoft.com/en-us/azure/azure-functions/functions-scale)
 * Bad, because it's already proven to be unwieldy and difficult to set up
 * Bad, because we don't have a lot of deep experience with Azure, and not everyone on the engineering team has access to it yet
 * Bad, because there doesn't appear to be first-class support for review environments, and requires orchestration of [deployment slots](https://docs.microsoft.com/en-us/azure/azure-functions/functions-deployment-slots)
-* … <!-- numbers of pros and cons can vary -->
 
 ### Heroku
 
