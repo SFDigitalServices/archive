@@ -1,10 +1,8 @@
 # Hosting
 
-* Status: proposed
-* Deciders: TBD
+* Status: accepted
+* Deciders: [Shawn Allen](https://github.com/shawnbot)
 * Date: 2022-03-01
-
-<!-- Technical Story: TBD -->
 
 ## Context and Problem Statement
 
@@ -33,17 +31,20 @@ We need to choose a hosting platform that serves these needs.
 
 ## Decision Outcome
 
-Chosen option: TBD
+Chosen option: **Heroku**
 
 ### Positive Consequences <!-- optional -->
 
-* {e.g., improvement of quality attribute satisfaction, follow-up decisions required, …}
-* …
+* Quick and easy setup
+* Full control over HTTP stack
+* Virtually limitless implementation options, from web app frameworks to low-level servers like [nginx]
+* Add-ons provide log retention and alerts
+* Ability to scale horizontally
 
 ### Negative Consequences <!-- optional -->
 
-* {e.g., compromising quality attribute, follow-up decisions required, …}
-* …
+* Will cost more than alternatives
+* Requires basic server management
 
 ## Pros and Cons of the Options <!-- optional -->
 
@@ -60,25 +61,27 @@ Chosen option: TBD
 * Bad, because there doesn't appear to be first-class support for review environments, and requires orchestration of [deployment slots](https://docs.microsoft.com/en-us/azure/azure-functions/functions-deployment-slots)
 * … <!-- numbers of pros and cons can vary -->
 
-### Pantheon
-
-[Pantheon] is the CMS hosting platform for both [sf.gov] and [sfgov.org]. We currently use it exclusively for hosting Drupal sites.
-
-* Good, because we already use and trust Pantheon
-* Good, because Pantheon _may_ support the types of managed URL redirection that we need
-* Bad, because Pantheon [does not currently support modifying `nginx.conf`](https://pantheon.io/docs/platform-considerations#nginxconf)] and may require us going through their support team to manage rules
-* Bad, because what we need for doesn't fit neatly into Pantheon's CMS-focused hosting/management model
-
-**Note:** We haven't been able to fully evaluate Pantheon's suitability for this project yet. We may revisit this ADR after meeting with them on 3/29/22.
-
 ### Heroku
 
 We run lots of sites, microservices, and other apps (including [DAHLIA](https://housing.sfgov.org)) on [Heroku].
 
 * Good, because we use it, know it, and mostly like it already
 * Good, because we would have direct control over the entire stack and could craft it to serve our needs
+* Good, because domain and SSL cert management is built-in and well-supported
 * Bad, because it's more expensive and we're trying to reduce our costs
 * Bad, because (as of 3/1/22) the platform [does not yet support HTTP/2](https://devcenter.heroku.com/articles/http-routing#http-versions-supported), which [may prove useful](https://www.ctrl.blog/entry/http2-push-redirects.html)
+
+### Pantheon
+
+[Pantheon] is the CMS hosting platform for both [sf.gov] and [sfgov.org]. We currently use it exclusively for hosting Drupal sites.
+
+* Good, because we already use and trust Pantheon
+* Good, because Pantheon _may_ support the types of managed URL redirection that we need
+* Bad, because the process for adding custom redirects is not clear
+* Bad, because Pantheon [does not currently support modifying `nginx.conf`](https://pantheon.io/docs/platform-considerations#nginxconf)] and may require us going through their support team to manage rules
+* Bad, because what we need for doesn't fit neatly into Pantheon's CMS-focused hosting/management model
+
+**Note:** We haven't been able to fully evaluate Pantheon's suitability for this project yet. We may revisit this ADR after meeting with them on 3/29/22.
 
 [404]: https://en.wikipedia.org/wiki/HTTP_404
 [sf.gov]: https://sf.gov
