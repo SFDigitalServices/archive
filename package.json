@@ -1,4 +1,5 @@
 {
+  "private": true,
   "main": "dist/server.js",
   "engines": {
     "node": "14.x"
