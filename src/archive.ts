@@ -8,23 +8,24 @@ const {
 } = process.env
 
 export async function getArchived (url: string): Promise<ArchiveSnapshot> {
-  const available: AvailableResponseData = await getAvailable(url)
-    .catch((error: unknown) => {
-      const message: string = (error instanceof Error)
-        ? error.message
-        : String(error)
-      console.warn('unable to get archive availability for:', url, message)
-      return undefined
-    })
+  const available = await getAvailable(url)
   return available?.archived_snapshots.closest
 }
 
 export async function getAvailable (url: string): Promise<AvailableResponseData> {
   const availableUrl: URL = new URL(WAYBACK_AVAILABLE_API)
   availableUrl.searchParams.append('url', url)
-  const res = await fetch(availableUrl)
-  const data: AvailableResponseData = await res.json()
-  return data
+  try {
+    const res = await fetch(availableUrl)
+    const data = await res.json() as AvailableResponseData
+    return data
+  } catch (error: unknown) {
+    const message: string = (error instanceof Error)
+      ? error.message
+      : String(error)
+    console.warn('unable to get archive availability for:', url, message)
+    return undefined
+  }
 }
 
 export async function archiveRedirectHandler (req: Request, res: Response, next: CallableFunction):Promise<void> {
