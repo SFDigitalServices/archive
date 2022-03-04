@@ -14,10 +14,14 @@ main({ port: PORT })
     const { port, address } = server.address() as AddressInfo
     console.log('listening on: %s:%s', address === '::' ? 'localhost' : address, port)
   })
+  .catch((error: Error) => {
+    console.error('Failed to start the server:', error)
+    process.exit(1)
+  })
 
 async function main ({ port }) {
   if (!port) port = await getPort()
-  return new Promise((resolve: Function, reject: Function) => {
+  return new Promise((resolve: (arg: Server) => void, reject: (error: unknown) => void) => {
     try {
       const server: Server = app.listen(port, () => resolve(server))
     } catch (error) {
