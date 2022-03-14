@@ -1,0 +1,14 @@
+{
+  "env": {
+    "jest": true
+  },
+  "extends": [
+    "plugin:sfgov/jest"
+  ],
+  "rules": {
+    "@typescript-eslint/no-unsafe-member-access": 0
+  },
+  "parserOptions": {
+    "project": "../../tsconfig.json"
+  }
+}
