@@ -1,22 +1,31 @@
 import { Request } from 'express'
-import { URL } from 'url'
 
+/**
+ * Get the "raw" query string from a URL or URI (typically a Request's
+ * `originalUrl`).
+ * @param url A URL or URI (not validated as a full-qualified URL)
+ * @returns the portion of the URI after the first "?", or undefined
+ */
 export function getRawQueryString (url: string): string {
-  return url.includes('?')
+  return url?.includes('?')
     ? url.substring(url.indexOf('?') + 1)
     : undefined
 }
 
-export function getActualRequestUrl (req: Request): string {
-  return `${req.protocol}://${req.hostname}${req.originalUrl}`
+/**
+ * Get the full request URL of an Express Request (or Request-shaped object).
+ * @param req the request
+ * @returns a fully-qualified URL
+ */
+export function getActualRequestUrl (req: Partial<Request>): string {
+  return `${req.protocol}://${req.hostname}${req.originalUrl || ''}`
 }
 
-export function getHTTPSUrl (url: string): string {
-  return mutateUrl(url, { protocol: 'https' })
-}
-
-export function mutateUrl (url: string | URL, props: Partial<URL>): string {
-  const u: URL = new URL(String(url))
-  Object.assign(u, props)
-  return url.toString()
+/**
+ * Replace the "http" protocol at the beginning of a URL string with "https".
+ * @param url the URL
+ * @returns a URL with "https://" at the beginning
+ */
+export function getHttpsUrl (url: string): string {
+  return url?.replace(/^http:/, 'https:')
 }
