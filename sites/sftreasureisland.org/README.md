@@ -40,6 +40,31 @@ We manage the collection on [Archive-It](https://partner.archive-it.org/571/coll
       To test a workaround for these, I ran one crawl on two specific node URLs seed scope rules that block URLs matching the regular expression `node/368/.+` and `node/351/.+`.
       The crawl produced nearly 3GB of data, [mostly in PDFs](https://partner.archive-it.org/571/collections/18901/crawl/1570719/types/application%7Cpdf).
 
+7. Temporarily disable sf.gov redirects
+
+      In order to work around issues with dead-end archive URLs, we decided to disable Drupal redirects to sf.gov before crawling again. See [the other section](#disabling-drupal-redirects) for more info.
+      
+      
+### Disabling Drupal redirects
+
+The goal here is to disable the redirects _temporarily_ so that we can run a crawl that doesn't fan out to the new pages on sf.gov, and accurately captures the old pages (which are effectively inaccessible with the redirects in place). To do this, you'll need:
+
+- [ ] Access to the CCSF Pantheon admin
+- [ ] The `mysql` command line tool (or some other app for managing MySQL/MariaDB)
+
+When you've got those sorted:
+
+1. Log into Pantheon and navigate to the [Treasure Island app](https://dashboard.pantheon.io/sites/09b62bfd-fa45-45a1-b9cd-79ebe754943a#live)'s "Live" tab and click the <kbd>Connection info</kbd> button in the top right:
+
+    <img width="1171" alt="image" src="https://user-images.githubusercontent.com/113896/158275300-fa0963b0-83ce-4f69-91e5-5cc1554e4379.png">
+    
+2. Copy the `mysql ...` command and run it in your terminal, or copy the connection info to your MySQL admin app.
+3. Run this SQL query to verify that there are sf.gov redirects:
+
+    ```sql
+    select * from redirect where redirect like 'https://sf.gov%';
+    ```
+
 
 
 [collection]: https://archive-it.org/collections/18901
