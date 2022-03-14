@@ -64,7 +64,39 @@ When you've got those sorted:
     ```sql
     select * from redirect where redirect like 'https://sf.gov%';
     ```
+    
+4. Log in to [sftreasureisland.org/admin](https://sftreasureisland.org/admin) so that you can clear the cache after disabling the redirects
+5. Take note of the already disabled sf.gov redirects, if any:
 
+    ```sql
+    select * from redirect where redirect like 'https://sf.gov%' and status != 1;
+    ```
+    
+6. Run this SQL query to disabled the redirects:
+
+    ```sql
+    update redirect set status = 0 where redirect like 'https://sf.gov%';
+    ```
+    
+    
+7. Clear the Drupal cache by clicking <kbd>Flush all caches</kbd> link in the admin header:
+    
+    <img width="172" alt="image" src="https://user-images.githubusercontent.com/113896/158277960-1a65b1d5-6ee4-4d09-a24b-f29786131850.png">
+
+8. Do the crawl with all relevant [???] seed URLs
+9. Run this SQL query to re-enable the redirects:
+
+    ```sql
+    update redirect set status = 1 where redirect like 'https://sf.gov%';
+    ```
+
+10. Re-_disable_ any previously disabled redirects by putting their `rid` values in the `in(...)` call:
+
+    ```sql
+    update redirect set status = 0 where rid in(...);
+    ```
+
+11. Clear the Drupal cache again, as in step 7 above.
 
 
 [collection]: https://archive-it.org/collections/18901
