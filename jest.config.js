@@ -1,3 +1,4 @@
+/** @type {import('ts-jest').ProjectConfigTsJest} */
 module.exports = {
   preset: 'ts-jest/presets/default',
   testEnvironment: 'jsdom',
@@ -5,6 +6,12 @@ module.exports = {
   collectCoverageFrom: [
     'src/**/*.ts'
   ],
-  transformIgnorePatterns: [
-  ]
+  coverageThreshold: {
+    global: {
+      branches: 90,
+      functions: 90,
+      lines: 90,
+      statements: 90
+    }
+  }
 }
