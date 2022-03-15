@@ -18,6 +18,11 @@ export function getRawQueryString (url: string): string {
  * @returns a fully-qualified URL
  */
 export function getActualRequestUrl (req: Partial<Request>): string {
+  if (!req.protocol) {
+    throw new Error(`Request has no protocol: "${req.url}"`)
+  } else if (!req.hostname) {
+    throw new Error(`Request has no hostname: "${req.url}"`)
+  }
   return `${req.protocol}://${req.hostname}${req.originalUrl || ''}`
 }
 
@@ -28,4 +33,20 @@ export function getActualRequestUrl (req: Partial<Request>): string {
  */
 export function getHttpsUrl (url: string): string {
   return url?.replace(/^http:/, 'https:')
+}
+
+/**
+ * Append query string parameters to a URL string (with or without a query
+ * string originally).
+ *
+ * @param url the original URL
+ * @param query key/value query string parameters
+ * @returns the new URL
+ */
+export function getUrlWithParams (url: string, query: object): string {
+  const out = new URL(url)
+  for (const [key, value] of Object.entries(query)) {
+    out.searchParams.set(key, value as string)
+  }
+  return out.href
 }

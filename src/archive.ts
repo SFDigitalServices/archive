@@ -1,11 +1,18 @@
 import fetch from 'node-fetch'
 import { URL } from 'url'
 import { Request, Response } from 'express'
-import { getRawQueryString, getActualRequestUrl, getHttpsUrl } from './url'
+import {
+  getRawQueryString,
+  getActualRequestUrl,
+  getHttpsUrl,
+  getUrlWithParams
+} from './url'
 
 const {
   WAYBACK_AVAILABLE_API = 'https://archive.org/wayback/available'
 } = process.env
+
+export { WAYBACK_AVAILABLE_API }
 
 export type ArchiveSnapshot = {
   status: string;
@@ -29,8 +36,7 @@ export async function getArchived (url: string): Promise<ArchiveSnapshot> {
 }
 
 export async function getAvailable (url: string): Promise<AvailableResponseData> {
-  const availableUrl: URL = new URL(WAYBACK_AVAILABLE_API)
-  availableUrl.searchParams.append('url', url)
+  const availableUrl: string = getUrlWithParams(WAYBACK_AVAILABLE_API, { url })
   try {
     const res = await fetch(availableUrl)
     const data = await res.json() as AvailableResponseData

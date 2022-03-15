@@ -2,16 +2,25 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Request } from 'express'
 import fetch, { Response } from 'node-fetch'
+import { getMockReq, getMockRes } from '@jest-mock/express'
 import {
+  ArchivedSnapshotsData,
+  archiveRedirectHandler,
+  AvailableResponseData,
   getArchived,
   getAvailable,
-  getRequestUrl
+  getRequestUrl,
+  WAYBACK_AVAILABLE_API
 } from '../archive'
+import { URL } from 'url'
+import { getUrlWithParams } from '../url'
+import { MockRequest } from '@jest-mock/express/dist/src/request'
 
 const actualFetch = jest.requireActual('node-fetch')
 jest.mock('node-fetch')
 const fetchMock = fetch as jest.MockedFunction<typeof fetch>
 beforeEach(() => {
+  fetchMock.mockClear()
   fetchMock.mockImplementation(actualFetch as (typeof fetch))
 })
 
@@ -77,20 +86,16 @@ describe('archive APIs', () => {
 
     describe('error handling', () => {
       it('handles errors gracefully', async () => {
-        fetchMock.mockImplementationOnce(() => Promise.resolve({
-          json (): never {
-            throw new Error('yikes')
-          }
-        } as unknown as Response))
+        fetchMock.mockResolvedValueOnce(
+          mockFetchError(new Error('yikes'))
+        )
         await expect(getAvailable('https://sf.gov')).resolves.toEqual(undefined)
       })
 
       it('handles other things', async () => {
-        fetchMock.mockImplementationOnce(() => Promise.resolve({
-          json (): never {
-            throw 'yikes' // eslint-disable-line
-          }
-        } as unknown as Response))
+        fetchMock.mockResolvedValueOnce(
+          mockFetchError('yikes')
+        )
         await expect(getAvailable('https://sf.gov')).resolves.toEqual(undefined)
       })
     })
@@ -105,14 +110,55 @@ describe('archive APIs', () => {
     })
 
     it('returns undefined when getAvailable() fails', async () => {
-      fetchMock.mockImplementationOnce(() => Promise.resolve({
-        json (): never {
-          throw new Error('yikes')
-        }
-      } as unknown as Response))
-
+      fetchMock.mockResolvedValueOnce(
+        mockFetchError(new Error('yikes'))
+      )
       await expect(getArchived('https://sf.gov')).resolves.toEqual(undefined)
     })
+  })
+})
+
+describe('archiveRedirectHandler()', () => {
+  it('redirects the requested URL', async () => {
+    const url = 'https://sftreasureisland.org/meetings/'
+    const availableUrl = getUrlWithParams(WAYBACK_AVAILABLE_API, { url })
+    const timestamp = '20500101000000'
+    const archivedUrl = `https://web.archive-it.org/${timestamp}/${url}`
+    fetchMock.mockResolvedValueOnce(
+      mockFetchJson({
+        url: archivedUrl,
+        archived_snapshots: {
+          closest: {
+            status: '200',
+            available: true,
+            url: archivedUrl,
+            timestamp 
+          }
+        }
+      })
+    )
+    const req = getMockReqFromUrl(url)
+    const { res, next } = getMockRes({ req })
+    await archiveRedirectHandler(req, res, next)
+    expect(fetchMock).toBeCalledTimes(1)
+    expect(fetchMock).toBeCalledWith(availableUrl)
+    expect(res.redirect).toBeCalledTimes(1)
+    expect(res.redirect).toBeCalledWith(301, archivedUrl)
+  })
+
+  it('calls next() if no archive is available', async () => {
+    const url = 'https://example.com/foo'
+    const availableUrl = getUrlWithParams(WAYBACK_AVAILABLE_API, { url })
+    fetchMock.mockResolvedValueOnce(
+      mockFetchError(404)
+    )
+    const req = getMockReqFromUrl(url)
+    const { res, next } = getMockRes({ req })
+    await archiveRedirectHandler(req, res, next)
+    expect(fetchMock).toBeCalledTimes(1)
+    expect(fetchMock).toBeCalledWith(availableUrl)
+    expect(next).toBeCalledTimes(1)
+    expect(res.redirect).not.toBeCalled()
   })
 })
 
@@ -124,4 +170,29 @@ function expectedSnapshotData (url: string, timestamp: string = undefined): obje
     url: expect.stringContaining(expectedArchiveUrl),
     timestamp: timestamp || expect.any(String)
   }
+}
+
+function mockFetchJson (value: any) {
+  return {
+    json: () => Promise.resolve(value)
+  } as Response
+}
+
+function mockFetchError (error: any) {
+  return {
+    json: () => Promise.reject(error)
+  } as Response
+}
+
+function getMockReqFromUrl (url: string, props: object = {}): Request {
+  const { host, hostname, pathname, protocol, search } = new URL(url)
+  return getMockReq({
+    url,
+    protocol: protocol.replace(':', ''),
+    host,
+    hostname,
+    path: pathname,
+    originalUrl: `${pathname}${search}`,
+    ...props
+  })
 }

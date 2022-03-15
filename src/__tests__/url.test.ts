@@ -35,6 +35,19 @@ describe('getActualRequestUrl()', () => {
       originalUrl: undefined
     })).toBe('http://example.com')
   })
+
+  it('throws if it gets no protocol', () => {
+    expect(() => getActualRequestUrl({
+      url: 'example.com'
+    })).toThrow('Request has no protocol: "example.com"')
+  })
+
+  it('throws if it gets no hostname', () => {
+    expect(() => getActualRequestUrl({
+      protocol: 'ftp',
+      url: 'ftp://wut'
+    })).toThrow('Request has no hostname: "ftp://wut"')
+  })
 })
 
 describe('getHttpsUrl()', () => {
