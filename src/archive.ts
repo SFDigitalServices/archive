@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'
 import { URL } from 'url'
-import { Request } from 'express'
-import { getRawQueryString, getActualRequestUrl } from './url'
+import { Request, Response } from 'express'
+import { getRawQueryString, getActualRequestUrl, getHttpsUrl } from './url'
 
 const {
   WAYBACK_AVAILABLE_API = 'https://archive.org/wayback/available'
@@ -44,7 +44,6 @@ export async function getAvailable (url: string): Promise<AvailableResponseData>
   }
 }
 
-/*
 export async function archiveRedirectHandler (req: Request, res: Response, next: CallableFunction):Promise<void> {
   const url: string = getRequestUrl(req)
   console.log('[archive] testing: "%s" (requested host: "%s", url: "%s")', url, req.hostname, req.originalUrl)
@@ -58,7 +57,6 @@ export async function archiveRedirectHandler (req: Request, res: Response, next:
     next()
   }
 }
-*/
 
 export function getRequestUrl (req: Partial<Request>): string {
   return req.params?.url ||
