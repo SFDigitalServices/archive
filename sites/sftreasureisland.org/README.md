@@ -78,11 +78,15 @@ Run the query and save it to `redirects.tsv` as TSV (the default format) with:
 
 ```sh
 terminus drush treasure-island.live sql:query "
+    SELECT 'rid', 'source', 'redirect', 'status'
+    UNION
     SELECT rid, source, redirect, status
     FROM redirect
     WHERE redirect LIKE 'https://sf.gov%'
 " > redirects.tsv
 ```
+
+(Note: the unioned string select outputs the column headers, as described in [this stackoverflow thread](https://stackoverflow.com/questions/356578/how-can-i-output-mysql-query-results-in-csv-format).)
 
 ### Disable sf.gov redirects
 The goal here is to **temporarily disable** the redirects so that we can run a crawl that doesn't fan out to the new pages on sf.gov, and accurately captures the old pages (which are effectively inaccessible with the redirects in place). 
@@ -119,14 +123,21 @@ terminus drush treasure-island.live sql:query "
 If there were any previously _disabled_ redirects in `redirects.tsv` (with `status = 0`), you can list their IDs (the `rid` db column) with:
 
 ```sh
-cat redirect.tsv | egrep '0$' | cut -f1
+npx tito -r tsv redirect.tsv -m 'd => +d.rid' -f 'd => d.status == 0'
 ```
 
-Then paste those into the `RIDS` variable separated by commas:
+**If this command doesn't print anything, you don't need to do anything else in this step!**
+
+If it **does**, you can stash the comma-separated ids in a variable like so:
 
 ```sh
-# they must be comma-separated!
-export RIDS="PASTE, IDS, HERE"
+export RIDS=$(npx tito -r tsv redirect.tsv -m 'd => +d.rid' -f 'd => d.status == 1' | tr '\n' ',' | sed 's/,$//')
+echo $RIDS
+```
+
+Make sure that the output looks like a series of numeric ids separated by commas, then set their `status` back to `0` with:
+
+```sh
 terminus drush treasure-island.live sql:query "
     UPDATE redirect
     SET status = 0
@@ -134,11 +145,13 @@ terminus drush treasure-island.live sql:query "
 "
 ```
 
-Then, clear the Drupal cache again:
+Then, clear the Drupal cache one last time:
 
 ```sh
 terminus drush treasure-island.live cr
 ```
+
+You should be good to go!
 
 [collection]: https://archive-it.org/collections/18901
 [url sheet]: https://docs.google.com/spreadsheets/d/17Sjac3PpryqqGJ2dAPOIO2EgAAoWygDohpQnndBU4J4/edit#gid=1347642292
