@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import { Request } from 'express'
 import {
-  getRawQueryString,
   getActualRequestUrl,
   getHttpsUrl,
-} from '../url'
+  getRawQueryString,
+  getUrlWithParams
+} from './url'
 
 describe('getRawQueryString()', () => {
   it('works', () => {
@@ -57,5 +57,19 @@ describe('getHttpsUrl()', () => {
 
   it('handles non-strings gracefully', () => {
     expect(getHttpsUrl(undefined)).toBe(undefined)
+  })
+})
+
+describe('getUrlWithParams()', () => {
+  it('appends a new query string', () => {
+    expect(getUrlWithParams('https://example.com', { foo: 'bar' })).toEqual('https://example.com/?foo=bar')
+  })
+
+  it('appends to an existing query string', () => {
+    expect(getUrlWithParams('https://example.com/?x=1', { foo: 'bar' })).toEqual('https://example.com/?x=1&foo=bar')
+  })
+
+  it('updates an existing query string parameyer', () => {
+    expect(getUrlWithParams('https://example.com/?x=1', { x: 2 })).toEqual('https://example.com/?x=2')
   })
 })

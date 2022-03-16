@@ -4,17 +4,14 @@ import { Request } from 'express'
 import fetch, { Response } from 'node-fetch'
 import { getMockReq, getMockRes } from '@jest-mock/express'
 import {
-  ArchivedSnapshotsData,
   archiveRedirectHandler,
-  AvailableResponseData,
   getArchived,
   getAvailable,
   getRequestUrl,
   WAYBACK_AVAILABLE_API
-} from '../archive'
+} from './archive'
 import { URL } from 'url'
-import { getUrlWithParams } from '../url'
-import { MockRequest } from '@jest-mock/express/dist/src/request'
+import { getUrlWithParams } from './url'
 
 const actualFetch = jest.requireActual('node-fetch')
 jest.mock('node-fetch')
@@ -132,7 +129,7 @@ describe('archiveRedirectHandler()', () => {
             status: '200',
             available: true,
             url: archivedUrl,
-            timestamp 
+            timestamp
           }
         }
       })
@@ -172,15 +169,18 @@ function expectedSnapshotData (url: string, timestamp: string = undefined): obje
   }
 }
 
-function mockFetchJson (value: any) {
+function mockFetchJson (value: unknown) {
   return {
     json: () => Promise.resolve(value)
   } as Response
 }
 
-function mockFetchError (error: any) {
+function mockFetchError (error: unknown) {
   return {
-    json: () => Promise.reject(error)
+    json () {
+      throw error
+      return Promise.reject(new Error('wut'))
+    }
   } as Response
 }
 
