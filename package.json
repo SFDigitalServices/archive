@@ -10,7 +10,7 @@
     "prestart": "npm run build",
     "start": "nodemon",
     "develop": "NODE_ENV=development run-p start watch",
-    "lint": "eslint src",
+    "lint": "eslint src '*.[jt]s'",
     "test": "jest",
     "watch-test": "jest --watch"
   },
