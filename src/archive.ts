@@ -1,10 +1,9 @@
-import fetch from 'node-fetch'
-import { URL } from 'url'
 import { Request, Response } from 'express'
+import fetch from 'node-fetch'
 import {
-  getRawQueryString,
   getActualRequestUrl,
   getHttpsUrl,
+  getRawQueryString,
   getUrlWithParams
 } from './url'
 
