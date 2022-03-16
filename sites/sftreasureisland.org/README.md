@@ -123,19 +123,20 @@ terminus drush treasure-island.live sql:query "
 If there were any previously _disabled_ redirects in `redirects.tsv` (with `status = 0`), you can list their IDs (the `rid` db column) with:
 
 ```sh
-npx tito -r tsv redirect.tsv -m 'd => +d.rid' -f 'd => d.status == 0'
+export RIDS=$(cat redirect.tsv | egrep '0$' | cut -f 1)
+echo $RIDS
 ```
 
 **If this command doesn't print anything, you don't need to do anything else in this step!**
 
-If it **does**, you can stash the comma-separated ids in a variable like so:
+If it **does**, you can re-format them onto a single line separated with commas:
 
 ```sh
-export RIDS=$(npx tito -r tsv redirect.tsv -m 'd => +d.rid' -f 'd => d.status == 1' | tr '\n' ',' | sed 's/,$//')
+export RIDS=$(echo $RIDS | tr '\n' ',' | sed 's/,$//')
 echo $RIDS
 ```
 
-Make sure that the output looks like a series of numeric ids separated by commas, then set their `status` back to `0` with:
+Then, after ensuring that the output looks like a series of numeric ids separated by commas, set their `status` back to `0` with:
 
 ```sh
 terminus drush treasure-island.live sql:query "
@@ -145,13 +146,13 @@ terminus drush treasure-island.live sql:query "
 "
 ```
 
-Then, clear the Drupal cache one last time:
+Clear the Drupal cache one last time...
 
 ```sh
 terminus drush treasure-island.live cr
 ```
 
-You should be good to go!
+You should be good to go! :rocket:
 
 [collection]: https://archive-it.org/collections/18901
 [url sheet]: https://docs.google.com/spreadsheets/d/17Sjac3PpryqqGJ2dAPOIO2EgAAoWygDohpQnndBU4J4/edit#gid=1347642292
