@@ -24,6 +24,12 @@
 			"type": "npm",
 			"script": "install",
 			"problemMatcher": []
+		},
+		{
+			"type": "npm",
+			"script": "lint",
+			"problemMatcher": ["$eslint-stylish"],
+			"label": "npm lint"
 		}
 	]
 }
