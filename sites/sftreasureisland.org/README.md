@@ -45,59 +45,101 @@ We manage the collection on [Archive-It](https://partner.archive-it.org/571/coll
       In order to work around issues with dead-end archive URLs, we decided to disable Drupal redirects to sf.gov before crawling again. See [the other section](#disabling-drupal-redirects) for more info.
       
       
-### Disabling Drupal redirects
+### Drupal redirects
 
-The goal here is to disable the redirects _temporarily_ so that we can run a crawl that doesn't fan out to the new pages on sf.gov, and accurately captures the old pages (which are effectively inaccessible with the redirects in place). To do this, you'll need:
+We need to do three things here:
 
-- [ ] Access to the CCSF Pantheon admin
-- [ ] The `mysql` command line tool (or some other app for managing MySQL/MariaDB)
+1. [Download redirect rules](#download-redirect-rules)
+2. [Disable sf.gov redirects](#disable-sfgov-redirects) before crawling
+3. [Re-enable sf.gov redirects](#re-enable-sfgov-redirects) after crawling
 
-When you've got those sorted:
+We'll do these with Pantheon's [terminus] command line tool, which you can [install](https://pantheon.io/docs/terminus/install) on macOS with:
 
-1. Log into Pantheon and navigate to the [Treasure Island app](https://dashboard.pantheon.io/sites/09b62bfd-fa45-45a1-b9cd-79ebe754943a#live)'s "Live" tab and click the <kbd>Connection info</kbd> button in the top right:
+```sh
+brew install pantheon-systems/external/terminus
+```
 
-    <img width="1171" alt="image" src="https://user-images.githubusercontent.com/113896/158275300-fa0963b0-83ce-4f69-91e5-5cc1554e4379.png">
-    
-2. Copy the `mysql ...` command and run it in your terminal, or copy the connection info to your MySQL admin app.
-3. Run this SQL query to verify that there are sf.gov redirects:
+SQL queries can be executed on the **live database** (:warning:) with:
 
-    ```sql
-    select * from redirect where redirect like 'https://sf.gov%';
-    ```
-    
-4. Log in to [sftreasureisland.org/admin](https://sftreasureisland.org/admin) so that you can clear the cache after disabling the redirects
-5. Take note of the already disabled sf.gov redirects, if any:
+```sh
+terminus drush treasure-island.live sql:query "$query"
+```
 
-    ```sql
-    select * from redirect where redirect like 'https://sf.gov%' and status != 1;
-    ```
-    
-6. Run this SQL query to disabled the redirects:
+### Download redirect rules
+We'll need to respect the existing redirect rules on `archive.sf.gov`. We can easily get these from the database with the SQL query:
 
-    ```sql
-    update redirect set status = 0 where redirect like 'https://sf.gov%';
-    ```
-    
-    
-7. Clear the Drupal cache by clicking <kbd>Flush all caches</kbd> link in the admin header:
-    
-    <img width="172" alt="image" src="https://user-images.githubusercontent.com/113896/158277960-1a65b1d5-6ee4-4d09-a24b-f29786131850.png">
+```sql
+SELECT rid, source, redirect, status
+FROM redirect
+WHERE redirect LIKE 'https://sf.gov%'
+```
 
-8. Do the crawl with all relevant [???] seed URLs
-9. Run this SQL query to re-enable the redirects:
+Run the query and save it to `redirects.tsv` as TSV (the default format) with:
 
-    ```sql
-    update redirect set status = 1 where redirect like 'https://sf.gov%';
-    ```
+```sh
+terminus drush treasure-island.live sql:query "
+    SELECT rid, source, redirect, status
+    FROM redirect
+    WHERE redirect LIKE 'https://sf.gov%'
+" > redirects.tsv
+```
 
-10. Re-_disable_ any previously disabled redirects by putting their `rid` values in the `in(...)` call:
+### Disable sf.gov redirects
+The goal here is to **temporarily disable** the redirects so that we can run a crawl that doesn't fan out to the new pages on sf.gov, and accurately captures the old pages (which are effectively inaccessible with the redirects in place). 
 
-    ```sql
-    update redirect set status = 0 where rid in(...);
-    ```
+```sh
+terminus drush treasure-island.live sql:query "
+    UPDATE redirect
+    SET status = 0
+    WHERE redirect LIKE 'https://sf.gov%'
+"
+```
 
-11. Clear the Drupal cache again, as in step 7 above.
+Then, we flush the cache with:
 
+```sh
+terminus drush treasure-island.live cr
+```
+
+Once this is done, you're clear to run the crawl with all relevant [???] seed URLs.
+
+### Re-enable sf.gov redirects
+
+Run this to re-enable the sf.gov redirects:
+
+```sh
+terminus drush treasure-island.live sql:query "
+    UPDATE redirect
+    SET status = 1
+    WHERE
+        redirect LIKE 'https://sf.gov%'
+"
+```
+
+If there were any previously _disabled_ redirects in `redirects.tsv` (with `status = 0`), you can list their IDs (the `rid` db column) with:
+
+```sh
+cat redirect.tsv | egrep '0$' | cut -f1
+```
+
+Then paste those into the `RIDS` variable separated by commas:
+
+```sh
+# they must be comma-separated!
+export RIDS="PASTE, IDS, HERE"
+terminus drush treasure-island.live sql:query "
+    UPDATE redirect
+    SET status = 0
+    WHERE rid IN($RIDS)
+"
+```
+
+Then, clear the Drupal cache again:
+
+```sh
+terminus drush treasure-island.live cr
+```
 
 [collection]: https://archive-it.org/collections/18901
 [url sheet]: https://docs.google.com/spreadsheets/d/17Sjac3PpryqqGJ2dAPOIO2EgAAoWygDohpQnndBU4J4/edit#gid=1347642292
+[terminus]: https://pantheon.io/docs/terminus
