@@ -1,6 +1,9 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
   "plugins": [
     "@typescript-eslint",
     "sfgov"
@@ -21,13 +24,23 @@
   },
   "overrides": [
     {
-      "files": ["src/**/*.ts"],
-      "parserOptions": {
-        "project": "./tsconfig.json"
-      },
+      "files": ["**/*.ts"],
       "rules": {
         "import/no-unresolved": 0
       }
+    },
+    {
+      "files": ["**/*.test.ts"],
+      "env": {
+        "jest": true
+      },
+      "extends": [
+        "plugin:sfgov/jest"
+      ],
+      "rules": {
+        "@typescript-eslint/no-unsafe-member-access": 0,
+        "@typescript-eslint/unbound-method": 0
+      }      
     }
   ]
 }
