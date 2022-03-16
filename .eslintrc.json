@@ -23,7 +23,7 @@
     {
       "files": ["src/**/*.ts"],
       "parserOptions": {
-        "project": "tsconfig.json"
+        "project": "./tsconfig.json"
       },
       "rules": {
         "import/no-unresolved": 0
