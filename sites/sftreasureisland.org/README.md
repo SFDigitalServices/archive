@@ -65,7 +65,7 @@ SQL queries can be executed on the **live database** (:warning:) with:
 terminus drush treasure-island.live sql:query "$query"
 ```
 
-### Download redirect rules
+#### Download redirect rules
 We'll need to respect the existing redirect rules on `archive.sf.gov`. We can easily get these from the database with the SQL query:
 
 ```sql
@@ -88,7 +88,7 @@ terminus drush treasure-island.live sql:query "
 
 (Note: the unioned string select outputs the column headers, as described in [this stackoverflow thread](https://stackoverflow.com/questions/356578/how-can-i-output-mysql-query-results-in-csv-format).)
 
-### Disable sf.gov redirects
+#### Disable sf.gov redirects
 The goal here is to **temporarily disable** the redirects so that we can run a crawl that doesn't fan out to the new pages on sf.gov, and accurately captures the old pages (which are effectively inaccessible with the redirects in place). 
 
 ```sh
@@ -107,7 +107,7 @@ terminus drush treasure-island.live cr
 
 Once this is done, you're clear to run the crawl with all relevant [???] seed URLs.
 
-### Re-enable sf.gov redirects
+#### Re-enable sf.gov redirects
 
 Run this to re-enable the sf.gov redirects:
 
