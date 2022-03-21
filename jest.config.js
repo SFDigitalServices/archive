@@ -1,7 +1,12 @@
 /** @type {import('ts-jest').ProjectConfigTsJest} */
-module.exports = {
-  preset: 'ts-jest/presets/default',
+const config = {
+  preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'jsdom',
+  globals: {
+    'ts-jest': {
+      useESM: true
+    }
+  },
   collectCoverage: true,
   collectCoverageFrom: [
     'src/**/*.ts'
@@ -15,3 +20,5 @@ module.exports = {
     }
   }
 }
+
+export default config
