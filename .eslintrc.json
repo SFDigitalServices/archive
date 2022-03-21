@@ -26,6 +26,7 @@
     {
       "files": ["**/*.ts"],
       "rules": {
+        "@typescript-eslint/restrict-template-expressions": 0,
         "import/no-unresolved": 0
       }
     },
