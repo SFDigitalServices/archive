@@ -22,7 +22,8 @@ All of the considered options have a proven track record of working in this conf
 - Redirect URLs without managed redirects to archived pages
 - Serve static assets for the `archive.sf.gov` front end
 - Run redirect rule tests as part of our CI workflow
-- Scale server resources horizontally to balance load
+- Scale in response to heavy loads
+- Protect the application server from bad requests
 
 ## Considered options
 
