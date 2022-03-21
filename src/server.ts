@@ -1,8 +1,8 @@
-import { Server } from 'http'
-import getPort from 'get-port'
-import app from './app'
-import { AddressInfo } from 'net'
 import dotenv from 'dotenv'
+import getPort from 'get-port'
+import { Server } from 'http'
+import { AddressInfo } from 'net'
+import app from './app'
 
 if (process.env.NODE_ENV === 'development') {
   dotenv.config()
