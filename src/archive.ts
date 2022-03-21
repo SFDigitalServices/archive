@@ -50,7 +50,7 @@ export async function getAvailable (url: string): Promise<AvailableResponseData>
 }
 
 export async function archiveRedirectHandler (req: Request, res: Response, next: CallableFunction):Promise<void> {
-  const url: string = getRequestUrl(req)
+  const url: string = res.locals.url as string || getRequestUrl(req)
   console.log('[archive] testing: "%s" (requested host: "%s", url: "%s")', url, req.hostname, req.originalUrl)
   const archived: ArchiveSnapshot = await getArchived(url)
   if (archived) {
