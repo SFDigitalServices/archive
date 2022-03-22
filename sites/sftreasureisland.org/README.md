@@ -78,9 +78,9 @@ Run the query and save it to `redirects.tsv` as TSV (the default format) with:
 
 ```sh
 terminus drush treasure-island.live sql:query "
-    SELECT 'rid', 'source', 'redirect', 'status'
+    SELECT 'rid', 'source', 'source_options', 'redirect', 'redirect_options', status'
     UNION
-    SELECT rid, source, redirect, status
+    SELECT rid, source, source_options, redirect, redirect_options, status
     FROM redirect
     WHERE redirect LIKE 'https://sf.gov%'
 " > redirects.tsv
