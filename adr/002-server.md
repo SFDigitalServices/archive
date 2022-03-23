@@ -1,8 +1,8 @@
 # Web server
 
-* Status: proposed
+* Status: **approved**
 * Deciders: [Shawn Allen](https://github.com/shawnbot)
-* Date: 2022-03-21
+* Date: 2022-03-23
 
 ## Context and Problem Statement
 
@@ -34,15 +34,18 @@ All of the considered options have a proven track record of working in this conf
 
 ## Decision outcome
 
-Chosen option: **TBD**
+Chosen option: **[Apache](#apache)**
 
-### Positive Consequences <!-- optional -->
+### Positive consequences <!-- optional -->
 
-* TBD
+* It does everything we need it to
+* Apache is the most mature option, so tutorials and examples are widespread
+* Its documentation is great
 
-### Negative Consequences <!-- optional -->
+### Negative consequences <!-- optional -->
 
-* TBD
+* We don't get to brag about using a more "modern" server
+* No built-in HTTP "normalization" or protection from malicious/malformed requests (but examples for said protection are easy to find!)
 
 ## Pros and cons of each option
 
