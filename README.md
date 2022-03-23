@@ -31,7 +31,7 @@ A "legacy site" is any City-owned site that is no longer relevant and/or superse
 In this repo, the term "document" refers to either a web page in HTML or a well-known document format (PDF, Word, Excel, etc.). Specific rules about document retention may be detailed in a forthcoming [ADR](#adrs).
 
 ## ADRs
-We use [**A**rchitectural **D**ecision **R**ecords][adr] to propose, evaluate, and make decisions about technical architecture. Our ADRs are written as [Markdown] in the [adr directory](./adr).
+We use [**A**rchitectural **D**ecision **R**ecords][adr] to propose, evaluate, and make decisions about technical architecture. Our ADRs are written as [Markdown] in the [docs/adr directory](./docs/adr).
 
 [sf.gov]: https://sf.gov
 [adr]: https://github.com/joelparkerhenderson/architecture-decision-record#what-is-an-architecture-decision-record
