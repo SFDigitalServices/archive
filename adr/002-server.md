@@ -59,6 +59,28 @@ Listed in alphabetical order...
 * Good, because its [VirtualHost directive](https://httpd.apache.org/docs/2.4/mod/core.html#virtualhost) allows hostname-specific configuration
 * Bad, because it's the least "interesting" (most boring) option
 
+#### Configuration sample
+```apache
+ProxyPreserveHost On
+
+<VirtualHost archive.sf.gov:${PORT}>
+  DocumentRoot "${APP_ROOT}/public"
+</VirtualHost>
+
+<VirtualHost sftreasureisland.org www.sftreasureisland.org>
+  RewriteEngine on
+  RewriteMap sftreasureisland "txt:${APP_ROOT}/redirects/sftreasureisland.txt"
+
+  # I'm not sure if we need ProxyPass + ProxyPassReverse here, or if requests
+  # will fall through to the *:* VirtualHost block below 🤔
+</VirtualHost>
+
+<VirtualHost *:*>
+  ProxyPass         / "http://0.0.0.0:80/"
+  ProxyPassReverse  / "http://0.0.0.0:80/"
+</VirtualHost>
+```
+
 ### HAProxy
 
 [HAProxy] is explicitly designed as a proxy and can only route requests between other servers. It can't serve static content, so we would need to run a separate server for static `archive.sf.gov` content.
@@ -69,6 +91,31 @@ Listed in alphabetical order...
 * Bad, because it [does not serve static content](http://cbonte.github.io/haproxy-dconv/2.5/intro.html#3.1)
 * Bad, because it [does not cache non-`200` statuses](http://cbonte.github.io/haproxy-dconv/2.5/configuration.html#6.1) (we will primarily be serving `301` redirects)
 
+#### Configuration sample
+```haproxy
+# I have no idea how this thing works
+frontend http-in
+  bind *:${PORT}
+  mode http
+  use_backend web if { hdr(host) -i archive.sf.gov }
+  use_backend sftreasureisland if { hdr(host) -i .sftreasureisland.org }
+  default_backend redirect 
+  
+backend web
+  # we will need a static web server on another port
+  server web 0.0.0.0:8080
+  
+backend sftreasureisland
+  server sftreasureisland1
+  http-request set-var(proc.map) "${APP_ROOT}/redirects/sftreasureisland.map"
+  http-request redirect location %[capture.req.uri,map(var(proc.map))] code 301 if { capture.req.uri,map(var(proc.map)) -m found }
+  default_backend redirect
+  
+backend redirect
+  mode http
+  server redirect1 0.0.0.0:80
+```
+
 ### NGINX
 
 NGINX is another very popular web server with built-in static file serving and reverse proxy capabilities.
@@ -78,6 +125,32 @@ NGINX is another very popular web server with built-in static file serving and r
 * Good, because its [proxy module](http://nginx.org/en/docs/http/ngx_http_proxy_module.html) supports easily configurable pass-throughs to backends and can [modify request headers](http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_set_header)
 * Good, because it has a highly configurable [built-in cache](https://docs.nginx.com/nginx/admin-guide/content-cache/content-caching/) that can vary TTLs by HTTP status
 * Bad, because it has a relatively cryptic [configuration format](https://docs.nginx.com/nginx/admin-guide/basic-functionality/managing-configuration-files/)
+
+#### Configuration sample
+Note: NGINX doesn't support environment variable substitution by default, so we would need to [preprocess it with `envsubst`](https://github.com/docker-library/docs/tree/master/nginx#using-environment-variables-in-nginx-configuration) (e.g.).
+
+```nginx
+server_name archive.sf.gov {
+  location / {
+    root ${APP_ROOT}/public;
+  }
+}
+
+server_name .sftreasureisland.org {
+  map $request_uri $redirect_url {
+    default "";
+    include ${APP_ROOT}/redirects/sftreasureisland.txt;
+  }
+  if $redirect_url {
+    return 302 $redirect_url;
+  }
+  proxy_pass http://0.0.0.0:80/;
+}
+
+server {
+  proxy_pass http://0.0.0.0:80/;
+}
+```
 
 ### Varnish
 
@@ -94,6 +167,10 @@ This may be too complicated a stack for our first iteration, but it's something 
 
 * Good, because it has a [caching admin console](https://varnish-cache.org/docs/7.0/reference/varnishadm.html#varnishadm-1) that can be used to inspect and flush the cache
 * Bad, because it has [its own configuration language, VCL](https://varnish-cache.org/docs/7.0/reference/vcl.html), which nobody on our team understands
+
+#### Configuration sample
+No sample included because the configuration is too complex 😬
+
 
 [apache]: https://httpd.apache.org/docs/2.2/
 [haproxy]: https://www.haproxy.org/
