@@ -1,5 +1,8 @@
 {
   "private": true,
+  "engines": {
+    "node": "16.x"
+  },
   "main": "dist/index.js",
   "scripts": {
     "build": "ncc build src/server.ts -o dist",
