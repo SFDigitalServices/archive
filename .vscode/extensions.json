@@ -1,4 +1,6 @@
 {
   "recommendations": [
+    "mechatroner.rainbow-csv",
+    "mrmlnc.vscode-apache"
   ]
 }
