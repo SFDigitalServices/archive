@@ -1,1 +1,1 @@
-web: vendor/bin/heroku-php-apache2 -c httpd/conf/heroku.conf public/
+web: httpd -c 'Include /app/httpd/conf/heroku.conf' -D NODETACH
