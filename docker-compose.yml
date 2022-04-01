@@ -11,13 +11,12 @@ services:
       - ./public/:/usr/local/apache2/htdocs/
     command: |
       httpd -c 'Include /app/httpd/conf/main.conf' -D FOREGROUND
-
-  app:
-    build: .
-    ports:
-      - 8001:80
-    volumes:
-      - ./src/:/app/src/
-      - ./dist/:/app/dist/
-    command: |
-      npm start
+    networks:
+      mock:
+        aliases:
+          # this is what allows us to test with the Host header
+          - archive.sf.gov
+          - sftreasureisland.org
+          - www.sftreasureisland.org
+networks:
+  mock:
