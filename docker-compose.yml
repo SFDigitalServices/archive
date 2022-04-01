@@ -15,6 +15,7 @@ services:
       mock:
         aliases:
           # this is what allows us to test with the Host header
+          - '${HEROKU_APP_NAME}.herokuapp.com'
           - archive.sf.gov
           - sftreasureisland.org
 networks:
