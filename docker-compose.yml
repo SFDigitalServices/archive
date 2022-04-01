@@ -10,7 +10,7 @@ services:
       # mount our httpd configs
       - ./httpd/:/app/httpd/
       # mount our public dir in place of the default apache docroot
-      - ./public/:/usr/local/apache2/htdocs/
+      - ./public/:/app/public/
     command: |
       httpd -c 'Include /app/httpd/conf/develop.conf' -c 'Include /app/httpd/conf/main.conf' -D FOREGROUND
     networks:
