@@ -1,0 +1,23 @@
+version: '3.2'
+services:
+  httpd:
+    image: httpd:2.4
+    ports:
+      - '${PORT}:80'
+    volumes:
+      # mount our httpd configs
+      - ./httpd/:/app/httpd/
+      # mount our public dir in place of the default apache docroot
+      - ./public/:/usr/local/apache2/htdocs/
+    command: |
+      httpd -c 'Include /app/httpd/conf/main.conf' -D FOREGROUND
+
+  app:
+    build: .
+    ports:
+      - 8001:80
+    volumes:
+      - ./src/:/app/src/
+      - ./dist/:/app/dist/
+    command: |
+      npm start
