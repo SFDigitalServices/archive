@@ -2,6 +2,8 @@ version: '3.2'
 services:
   httpd:
     image: httpd:2.4
+    env_file:
+      - .env
     ports:
       - '${PORT}:80'
     volumes:
