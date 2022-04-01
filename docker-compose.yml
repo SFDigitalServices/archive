@@ -7,18 +7,15 @@ services:
     ports:
       - '${PORT}:80'
     volumes:
-      # mount our httpd configs
       - ./httpd/:/app/httpd/
-      # mount our public dir in place of the default apache docroot
       - ./public/:/app/public/
-    command: |
-      httpd -c 'Include /app/httpd/conf/develop.conf' -c 'Include /app/httpd/conf/main.conf' -D FOREGROUND
+      - /app/.git
+    command: httpd -c 'Include /app/httpd/conf/main.conf' -c 'Include /app/httpd/conf/main.conf' -D FOREGROUND
     networks:
       mock:
         aliases:
           # this is what allows us to test with the Host header
           - archive.sf.gov
           - sftreasureisland.org
-          - www.sftreasureisland.org
 networks:
   mock:
