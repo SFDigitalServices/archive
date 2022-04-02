@@ -1,7 +1,7 @@
 {
   "stack": "heroku-20",
   "buildpacks": [
-    { "url": "https://github.com/corydolphin/heroku-buildpack-apache" }
+    { "url": "heroku/php" }
   ],
   "addons": [
     "papertrail:choklad"
