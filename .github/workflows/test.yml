@@ -19,5 +19,8 @@ jobs:
           node-version: 16
           # cache: npm
           # cache-dependency-path: tests/package-lock.json
-      - run: npm test
-        working-directory: tests
+      - name: install and test
+        run: |
+          cd tests
+          npm install
+          npm test
