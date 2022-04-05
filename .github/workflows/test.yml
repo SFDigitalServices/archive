@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-          cache: npm
-          cache-dependency-path: tests/package-lock.json
+          # cache: npm
+          # cache-dependency-path: tests/package-lock.json
       - run: npm test
         working-directory: tests
