@@ -9,18 +9,16 @@ jobs:
     env:
       TEST_BASE_URL: ${{ github.event.deployment.payload.web_url }}
     steps:
-      - if: env.TEST_BASE_URL == ''
+      - name: bail if TEST_BASE_URL is empty
+        if: env.TEST_BASE_URL == ''
         run: |
-          echo "TEST_BASE_URL is empty; no tests can be run!"
+          echo "TEST_BASE_URL is empty; no tests can be run!" > /dev/stderr
           exit 1
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
-          # cache: npm
-          # cache-dependency-path: tests/package-lock.json
-      - name: install and test
-        run: |
-          cd tests
-          npm install
-          npm test
+          cache: npm
+          cache-dependency-path: '**/package-lock.json'
+      - name: run tests
+        run: scripts/test.sh
