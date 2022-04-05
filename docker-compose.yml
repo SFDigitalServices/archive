@@ -1,6 +1,7 @@
 version: '3.2'
 services:
   httpd:
+    container_name: archive-httpd
     image: httpd:2.4
     env_file:
       - .env
@@ -28,3 +29,4 @@ services:
 networks:
   mock:
     # this space intentionally left blank
+
