@@ -58,7 +58,9 @@ setWorldConstructor(class RequestWorld {
     if (!url) {
       throw new Error(`Cannot determine base URL from parameters: ${JSON.stringify(this.parameters, null, 2)}`)
     }
-    return url
+    return this.headers?.Host
+      ? url.replace(/^https:/, 'http:')
+      : url
   }
 
   set baseUrl (url) {
