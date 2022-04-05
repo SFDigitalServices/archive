@@ -5,7 +5,9 @@ const fetch = require('node-fetch')
 const expect = require('expect')
 const { URL } = require('url')
 
-require('dotenv').config()
+require('dotenv').config({
+  path: '..'
+})
 
 defineParameterType({
   name: 'url',
