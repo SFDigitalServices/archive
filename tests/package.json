@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "scripts": {
+    "test": "cucumber-js"
+  },
+  "dependencies": {
+    "@cucumber/cucumber": "^7.3.2"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.0",
+    "expect": "^27.5.1",
+    "node-fetch": "^2.6.7",
+    "parse-raw-http": "^0.0.1"
+  }
+}
