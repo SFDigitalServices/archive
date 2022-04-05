@@ -1,5 +1,8 @@
 {
   "private": true,
+  "engines": {
+    "node": ">=14"
+  },
   "scripts": {
     "test": "cucumber-js"
   },
