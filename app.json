@@ -7,7 +7,7 @@
     "papertrail:choklad"
   ],
   "environments": {
-    "preview": {
+    "review": {
       "addons": [
         "papertrail:choklad"
       ]
