@@ -29,4 +29,3 @@ services:
 networks:
   mock:
     # this space intentionally left blank
-
