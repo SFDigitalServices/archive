@@ -30,19 +30,21 @@ When('I visit {url}', async function (url) {
 })
 
 Then('I should be redirected to {url}', function (url) {
-  expect(Object.fromEntries(this.response.headers.entries())).toEqual(
-    expect.objectContaining({ location: url })
-  )
   expect(this.response.status).toBe(302)
+  expect(this.response.headers.get('Location')).toEqual(url)
 })
 
 Then('I should get status code {int}', function (code) {
   expect(this.response.status).toBe(code)
 })
 
+Then('I should get header {string} containing {string}', function (name, value) {
+  expect(this.response.headers.get(name)).toContain(value)
+})
+
 Then('I should get header {string}', function (headerString) {
   const [name, value] = headerString.split(': ')
-  expect(this.response.headers.get(name)).toMatch(new RegExp(`^${value}`))
+  expect(this.response.headers.get(name)).toEqual(value)
 })
 
 Then('I should get HTML title {string}', async function (title) {
