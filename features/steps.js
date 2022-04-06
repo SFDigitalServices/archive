@@ -1,13 +1,13 @@
-const { parseResponse } = require('parse-raw-http').parseResponse // derp
-const { setWorldConstructor, defineParameterType, Given, When, After, Before, Then } = require('@cucumber/cucumber')
+const { parseResponse } = require('parse-raw-http').parseResponse // XXX: this shouldn't be necessary
+const { setWorldConstructor, defineParameterType, Given, When, Then } = require('@cucumber/cucumber')
 const { spawnSync } = require('child_process')
 const fetch = require('node-fetch')
 const expect = require('expect')
 const { URL } = require('url')
 
-require('dotenv').config({
-  path: '..'
-})
+require('dotenv').config()
+
+// console.info('TEST_BASE_URL:', process.env.TEST_BASE_URL)
 
 defineParameterType({
   name: 'url',
@@ -58,7 +58,7 @@ setWorldConstructor(class RequestWorld {
   }
   
   get baseUrl () {
-    const url =  this._baseUrl || this.parameters.baseUrl || process.env.TEST_BASE_URL
+    const url =  this._baseUrl || this.parameters.baseUrl || getEnvTestUrl()
     if (!url) {
       throw new Error(`Cannot determine base URL from parameters: ${JSON.stringify(this.parameters, null, 2)}`)
     }
@@ -97,3 +97,12 @@ setWorldConstructor(class RequestWorld {
       : this.response.text()
   }
 })
+
+function getEnvTestUrl () {
+  const { TEST_BASE_URL, PORT } = process.env
+  if (TEST_BASE_URL) {
+    const url = new URL(TEST_BASE_URL)
+    if (PORT && !url.port) url.port = PORT
+    return url.toString()
+  }
+}
