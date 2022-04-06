@@ -4,8 +4,10 @@
     "node": ">=14"
   },
   "scripts": {
+    "start": "scripts/start.sh",
     "test": "cucumber-js",
-    "watch": "watchy -w httpd/conf -- scripts/reload.sh"
+    "test:watch": "watchy -d 2 -w httpd/conf -w features -w cucumber.js -- cucumber-js",
+    "watch": "watchy -d 2 -w httpd/conf -- scripts/reload.sh"
   },
   "dependencies": {
     "@cucumber/cucumber": "^7.3.2",
