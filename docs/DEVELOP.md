@@ -29,7 +29,7 @@ You can customize the port to test by modifying the `PORT=` line of your local
 See [docker-compose.yml](../docker-compose.yml) for an annotated description of
 the local development setup.
 
-### Tests
+## Tests
 Tests live in the [tests directory](../tests) and are written in [Gherkin]. You can execute the tests by running two scripts in parallel:
 
 - `scripts/start.sh` to start the server
@@ -40,7 +40,7 @@ You can reload the httpd configuration on the running container (which is faster
 #### Step definitions
 Step definitions for our Gherkin tests live in [tests/features/steps.js](../tests/features/steps.js).
 
-### httpd configuration
+## httpd configuration
 Our `httpd` configurations live in [httpd/conf](../httpd/conf/), and are
 separated out ease development:
 
@@ -52,37 +52,26 @@ separated out ease development:
   directory](../httpd/conf/sites/).
 
 ### Site configurations
-Each site that we archive needs to have its own [VirtualHost] directive in the httpd config. There are two ways to get this:
+Each site that we archive needs to have its own [VirtualHost] directive in the httpd config. Most of these blocks will:
 
-#### ArchiveSite macro
-The main config provides an `ArchiveSite` [macro][mod_macro] for site-specific one-liners:
+- Match the HTTP request host exactly, or with a wildcard subdomain (`*.domain.org`) 
+- Load a site-specific [rewrite map] from [httpd/conf/sites](../httpd/conf/sites)
+- Redirect (rewrite) all requests for that host to either:
+    1. The exact match from the first column in the rewrite map (for URLs that should redirect to `sf.gov`); or
+    2. The latest snapshot of the full URL from [Archive-It] with a site-specific collection id. The template for these URLs is either:
 
-```apache
-#               domain          rewrites_file         collection_id
-Use ArchiveSite some-domain.org sites/some-domain.tsv 12345
-```
+        ```
+        https://wayback.archive-it.org/{collection}/3/{url}
+        ```
 
-This will set up a [VirtualHost] block that:
+        Where `{collection}` is the collection id and `{url}` is the (fully qualified or not) URL that's been archived; or, if the collection id isn't known:
+        
+        ```
+        https://wayback.archive-it.org/org-571/*/{url}
+        ```
+        
+        See [Archive-it's redirect suggestions][archive redirects] for more info.
 
-- Matches the `domain` host exactly or with a wildcard subdomain (`www.${domain}`) 
-- Loads the `rewrites_file` path relative to [httpd/conf/sites](../httpd/conf/sites)
-- Redirects (rewrites) all requests on that domain to either:
-    - The exact match from the first column in the `rewrites_file`, or
-    - The latest snapshot of the full URL from [Archive-It] in the provided `collection_id`
-
-#### Explicit site config
-
-Sites with either more complicated rewrite logic or other needs should be
-configured in a separate file in the [httpd/conf/sites](../httpd/conf/sites/)
-directory. Our [main config] uses a glob pattern to include all of the sites, so
-every `.conf` file in the sites directory is included automatically:
-
-```apache
-Include /app/conf/sites/*.conf
-```
-
-These configs should contain one or more [VirtualHost] directives that
-[rewrite][] (and/or [redirect]) requests to the domains in question. You can use the [`ArchiveSite` macro](#archivesite-macro) defined in our [main config] as a template.
 
 ### Restart the app
 Our app runs `httpd` in the foreground rather than forking, so when you run
@@ -91,6 +80,7 @@ pressing <kbd>Control+C</kbd> (or the equivalent in your shell of choice). To
 restart the server, just run `docker-compose up` again.
 
 [archive-it]: https://www.archive-it.org/
+[archive redirects]: https://support.archive-it.org/hc/en-us/articles/360058264752-Redirecting-broken-links-to-web-archives-automatically
 [compose networks]: https://docs.docker.com/compose/networking/
 [container]: https://docs.docker.com/get-started/#what-is-a-container
 [docker]: https://docs.docker.com/get-started/
@@ -100,7 +90,7 @@ restart the server, just run `docker-compose up` again.
 [install docker]: https://docs.docker.com/get-docker/
 [procfile]: ../Procfile
 [main config]: ../httpd/conf/main.conf
-[mod_macro]: https://httpd.apache.org/docs/2.4/mod/mod_macro.html
 [virtualhost]: https://httpd.apache.org/docs/2.4/mod/core.html#virtualhost
 [rewrite]: https://httpd.apache.org/docs/2.4/mod/mod_rewrite.html
+[rewrite map]: https://httpd.apache.org/docs/2.4/mod/mod_rewrite.html#rewritemap
 [redirect]: https://httpd.apache.org/docs/2.4/rewrite/avoid.html#redirect
