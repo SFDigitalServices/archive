@@ -1,6 +1,4 @@
-const { parseResponse } = require('parse-raw-http').parseResponse // XXX: this shouldn't be necessary
 const { setWorldConstructor, defineParameterType, Given, When, Then } = require('@cucumber/cucumber')
-const { spawnSync } = require('child_process')
 const fetch = require('node-fetch')
 const expect = require('expect')
 const { URL } = require('url')
