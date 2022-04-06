@@ -30,15 +30,12 @@ See [docker-compose.yml](../docker-compose.yml) for an annotated description of
 the local development setup.
 
 ## Tests
-Tests live in the [tests directory](../tests) and are written in [Gherkin]. You can execute the tests by running two scripts in parallel:
+Tests live in the [features directory](../features) and are written in [Gherkin]. You can execute the tests by running two scripts in parallel:
 
-- `scripts/start.sh` to start the server
-- `scripts/test.sh` to run `cucumber-js`
+- `docker-compose up` to start the server
+- `npm test` to run `cucumber-js`
 
-You can reload the httpd configuration on the running container (which is faster than stopping and restarting) with `scripts/reload.sh`.
-
-#### Step definitions
-Step definitions for our Gherkin tests live in [tests/features/steps.js](../tests/features/steps.js).
+You can reload the httpd configuration on the running container (which is faster than stopping and restarting) with `scripts/reload.sh`. See [features/README.md](../features/README.md#readme) for more info.
 
 ## httpd configuration
 Our `httpd` configurations live in [httpd/conf](../httpd/conf/), and are
