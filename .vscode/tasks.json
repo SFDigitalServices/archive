@@ -6,20 +6,6 @@
 			"label": "npm install",
 			"script": "install --prune",
 			"problemMatcher": []
-		},
-		{
-			"type": "npm",
-			"label": "npm test",
-			"script": "test",
-			"problemMatcher": [],
-			"detail": "run acceptance tests"
-		},
-		{
-			"type": "npm",
-			"label": "npm watch",
-			"script": "watch",
-			"problemMatcher": [],
-			"detail": "reload the httpd configs in the Docker container when they change"
 		}
 	]
 }
