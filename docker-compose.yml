@@ -1,6 +1,7 @@
 version: '3.2'
 services:
   httpd:
+    container_name: archive-httpd
     image: httpd:2.4
     env_file:
       - .env
@@ -16,7 +17,7 @@ services:
     # this should mirror the web process command in Procfile, *except* that it
     # should include main.conf instead of heroku.conf
     command: |
-      httpd -c 'Include /app/httpd/conf/main.conf' -c 'Include /app/httpd/conf/main.conf' -D FOREGROUND
+      httpd -c 'Include /app/httpd/conf/main.conf' -D FOREGROUND
     networks:
       mock:
         aliases:

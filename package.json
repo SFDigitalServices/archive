@@ -1,0 +1,19 @@
+{
+  "private": true,
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "start": "scripts/start.sh",
+    "test": "cucumber-js",
+    "test:watch": "watchy -d 2 -w httpd/conf -w features -w cucumber.js -- cucumber-js",
+    "watch": "watchy -d 2 -w httpd/conf -- scripts/reload.sh"
+  },
+  "dependencies": {
+    "@cucumber/cucumber": "^7.3.2",
+    "dotenv": "^16.0.0",
+    "expect": "^27.5.1",
+    "node-fetch": "^2.6.7",
+    "watchy": "^0.10.0"
+  }
+}
