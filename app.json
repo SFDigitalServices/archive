@@ -1,7 +1,8 @@
 {
   "stack": "heroku-20",
   "buildpacks": [
-    { "url": "heroku/php" }
+    { "url": "heroku/php" },
+    { "url": "heroku/cli" }
   ],
   "addons": [
     "papertrail:choklad"
@@ -10,7 +11,10 @@
     "review": {
       "addons": [
         "papertrail:choklad"
-      ]
+      ],
+      "env": {
+        "REVIEW_APP": "true"
+      }
     }
   }
 }
