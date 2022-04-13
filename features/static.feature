@@ -1,6 +1,10 @@
-Feature: Static files
-  Scenario: /  
+Feature: archive.sf.gov
+  Scenario: / redirect
     When I visit /
-    Then I should get status code 200
-    And  I should get header "Content-Type" containing "text/html"
-    And  I should get HTML title "SF.gov archive"
+    Then I should be redirected to https://sf.gov/
+
+  Scenario: *.herokuapp.com
+    Given request headers:
+      | Host | sfgov-archive.herokuapp.com |
+    When I visit /
+    Then I should be redirected to https://sf.gov/
