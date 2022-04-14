@@ -7,6 +7,7 @@ jobs:
     if: github.event.deployment_status.state == 'success'
     runs-on: ubuntu-latest
     env:
+      PRODUCTION_ENV: sfgov-archive
       TEST_BASE_URL: ${{ github.event.deployment.payload.web_url }}
       HEROKU_APP_NAME: ${{ github.event.deployment.environment }}
     steps:
@@ -20,7 +21,7 @@ jobs:
         with:
           node-version: 16
       - run: npm install
-      - if: github.event.deployment.production_deployment == false
+      - if: github.event.deployment.environment != env.PRODUCTION_ENV
         run: |
           export TEST_SUBDOMAIN="${HEROKU_APP_NAME}."
           echo "TEST_SUBDOMAIN: '$TEST_SUBDOMAIN'"
