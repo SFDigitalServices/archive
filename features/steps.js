@@ -24,10 +24,12 @@ Given('request headers:', function (data) {
 })
 
 When('I visit {url}', async function (url) {
+  url = envsubst(url)
   await this.load(url)
 })
 
 Then('I should be redirected to {url}', function (url) {
+  url = envsubst(url)
   expect(this.response.status).toBe(302)
   expect(this.response.headers.get('Location')).toEqual(url)
 })
@@ -37,22 +39,38 @@ Then('I should get status code {int}', function (code) {
 })
 
 Then('I should get header {string} containing {string}', function (name, value) {
+  value = envsubst(value)
   expect(this.response.headers.get(name)).toContain(value)
 })
 
 Then('I should get header {string}', function (headerString) {
-  const [name, value] = headerString.split(': ')
+  const [name, value] = envsubst(headerString).split(': ')
   expect(this.response.headers.get(name)).toEqual(value)
 })
 
 Then('I should get HTML title {string}', async function (title) {
-  await expect(this.content).resolves.toContain(`<title>${title}</title>`)
+  const html = `<title>${envsubst(title)}</title>`
+  await expect(this.content).resolves.toContain(html)
 })
 
 setWorldConstructor(class RequestWorld {
   constructor ({ attach, parameters }) {
     this.attach = attach
     this.parameters = parameters
+    this._headers = {}
+  }
+
+  get headers () {
+    return this._headers
+  }
+
+  set headers (values) {
+    this._headers = Object.fromEntries(
+      Object.entries(values).map(([key, value]) => [
+        key,
+        envsubst(value)
+      ])
+    )
   }
   
   get baseUrl () {
@@ -103,4 +121,10 @@ function getEnvTestUrl () {
     if (PORT && !url.port) url.port = PORT
     return url.toString()
   }
+}
+
+function envsubst (input) {
+  return input
+    .replace(/\$\{([a-z][^}]+)}/g, (_, key) => process.env[key] || '')
+    .replace(/\$([a-z]\w+)/gi, (_, key) => process.env[key] || '')
 }
