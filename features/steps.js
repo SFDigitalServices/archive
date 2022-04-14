@@ -2,6 +2,7 @@ const { setWorldConstructor, defineParameterType, Given, When, Then } = require(
 const fetch = require('node-fetch')
 const expect = require('expect')
 const { URL } = require('url')
+const { getEnvTestUrl, envsubst } = require('./support')
 
 require('dotenv').config()
 
@@ -99,8 +100,10 @@ setWorldConstructor(class RequestWorld {
 
   async load (url, options = {}) {
     const fullUrl = this.getFullUrl(url)
+    const { headers } = this
+    // console.info('loading: %s', fullUrl, 'with', headers)
     const res = await fetch(fullUrl, {
-      headers: this.headers,
+      headers,
       redirect: 'manual',
       ...options
     })
@@ -113,18 +116,3 @@ setWorldConstructor(class RequestWorld {
       : this.response.text()
   }
 })
-
-function getEnvTestUrl () {
-  const { TEST_BASE_URL, PORT } = process.env
-  if (TEST_BASE_URL) {
-    const url = new URL(TEST_BASE_URL)
-    if (PORT && !url.port) url.port = PORT
-    return url.toString()
-  }
-}
-
-function envsubst (input) {
-  return input
-    .replace(/\$\{([a-z][^}]+)}/g, (_, key) => process.env[key] || '')
-    .replace(/\$([a-z]\w+)/gi, (_, key) => process.env[key] || '')
-}
