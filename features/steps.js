@@ -101,7 +101,9 @@ setWorldConstructor(class RequestWorld {
   async load (url, options = {}) {
     const fullUrl = this.getFullUrl(url)
     const { headers } = this
-    // console.info('loading: %s', fullUrl, 'with', headers)
+    if (process.env.DEBUG == 1) {
+      console.info('loading: %s', fullUrl, 'with', headers)
+    }
     const res = await fetch(fullUrl, {
       headers,
       redirect: 'manual',
