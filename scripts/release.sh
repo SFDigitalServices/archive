@@ -13,6 +13,6 @@ fi
 echo "Setting up auto-domains for $HEROKU_APP_NAME..."
 for host in `perl -ne 'print "$1\n" if /ServerAlias .*HEROKU_APP_NAME}?\.(.+)"?$/;' httpd/conf/**/*.conf`; do
   domain="$HEROKU_APP_NAME.$host"
-  echo npx heroku domains:add -a "$HEROKU_APP_NAME" "$domain" \
+  npx heroku domains:add -a "$HEROKU_APP_NAME" "$domain" \
     || echo "Unable to add domain '$domain' to app '$HEROKU_APP_NAME'"
 done
