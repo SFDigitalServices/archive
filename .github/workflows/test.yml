@@ -22,6 +22,7 @@ jobs:
           node-version: 16
       - run: npm install
       - if: github.event.deployment.environment != env.PRODUCTION_ENV
+        name: set TEST_SUBDOMAIN (if not production)
         run: |
           export TEST_SUBDOMAIN="${HEROKU_APP_NAME}."
           echo "TEST_SUBDOMAIN: '$TEST_SUBDOMAIN'"
