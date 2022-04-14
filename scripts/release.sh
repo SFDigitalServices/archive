@@ -5,7 +5,7 @@ if [ -z "$HEROKU_APP_NAME" ]; then
   exit
 fi
 
-if [ "$HEROKU_APP_NAME" -eq "sfgov-archive" ]; then
+if [ "$HEROKU_APP_NAME" = "sfgov-archive" ]; then
   echo "No auto-domains to set in production"
   exit
 fi
