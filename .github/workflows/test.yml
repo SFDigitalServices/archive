@@ -8,20 +8,21 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TEST_BASE_URL: ${{ github.event.deployment.payload.web_url }}
-      DEPLOY_ENV: ${{ github.event.deployment.environment }}
+      HEROKU_APP_NAME: ${{ github.event.deployment.environment }}
     steps:
       - name: bail if TEST_BASE_URL is empty
         if: env.TEST_BASE_URL == ''
         run: |
           echo "TEST_BASE_URL is empty; no tests can be run!" > /dev/stderr
           exit 1
-      - name: deployment payload
-        run: |
-          echo 'environment: "${{ env.DEPLOY_ENV }}"'
-          echo 'github.event.deployment: ${{ toJSON(github.event.deployment) }}'
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
         with:
           node-version: 16
       - run: npm install
+      - if: github.event.deployment.production_deployment == false
+        run: |
+          export TEST_SUBDOMAIN="${HEROKU_APP_NAME}."
+          echo "TEST_SUBDOMAIN: '$TEST_SUBDOMAIN'"
+          echo "TEST_SUBDOMAIN=$TEST_SUBDOMAIN" >> $GITHUB_ENV
       - run: npm test
