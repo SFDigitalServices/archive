@@ -12,11 +12,15 @@ fi
 
 echo "Checking Heroku auth..."
 npx heroku auth:whoami
+
 echo "Setting up auto-domains for $HEROKU_APP_NAME..."
-for host in `perl -ne 'print "$1\n" if /ServerAlias .*\$HEROKU_APP_NAME\.([-\w\.]+)/;' httpd/conf/**/*.conf`; do
-  domain="$HEROKU_APP_NAME.$host"
+for tld in $(scripts/domains.sh); do
+  # echo "tld: '$tld'"
+  domain="$HEROKU_APP_NAME.$tld"
+  echo "domain: '$domain'"
   npx heroku domains:add -a "$HEROKU_APP_NAME" "$domain" \
     || echo "Unable to add domain '$domain' to app '$HEROKU_APP_NAME'"
 done
-echo "Waiting for auto-domains..."
+
+echo "Waiting for domains..."
 npx heroku domains:wait -a "$HEROKU_APP_NAME"
