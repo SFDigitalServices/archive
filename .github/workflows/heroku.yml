@@ -1,0 +1,38 @@
+name: Heroku
+on:
+  push:
+    branches-ignore:
+      - 'docs/*'
+    paths-ignore:
+      - 'docs/**'
+  pull_request:
+    types: [opened, closed, synchronize]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: secrets.HEROKU_API_KEY
+    env:
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      HEROKU_APP_NAME: sfgov-archive
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v3
+      - run: npm install -g heroku
+      - name: add "-pr-${{ env.PR_NUMBER }}" suffix HEROKU_APP_NAME
+        if: env.PR_NUMBER
+        run: echo "HEROKU_APP_NAME=${HEROKU_APP_NAME}-pr-${{ env.PR_NUMBER }}" >> $GITHUB_ENV
+      - name: heroku create
+        if: github.event.type == 'opened'
+        run: heroku apps:create $HEROKU_APP_NAME
+      - name: heroku destroy
+        if: github.event.type == 'closed'
+        run: heroku apps:destroy $HEROKU_APP_NAME
+      - name: git push
+        if: github.event_name == 'push' || github.event.type == 'synchronize'
+        run: |
+          git heroku git:remote --app $HEROKU_APP_NAME
+          git push heroku master
