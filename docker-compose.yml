@@ -25,7 +25,7 @@ services:
           # `curl -H 'Host: $hostname' http://localhost:$PORT/...`
           - '${HEROKU_APP_NAME}.herokuapp.com'
           - archive.sf.gov
-          - sftreasureisland.org
+          - '${TEST_SUBDOMAIN}sftreasureisland.org'
 networks:
   mock:
     # this space intentionally left blank
