@@ -1,2 +1,2 @@
 #!/bin/bash
-perl -ne 'print "$1\n" if /ServerAlias .*\$HEROKU_APP_NAME\.([-\w\.]+)/;' httpd/conf/**/*.conf
+perl -nle 'print $1 if /ServerAlias .*\$\{?HEROKU_APP_NAME\}?\.([-\w\.]+)/;' httpd/conf/**/*.conf
