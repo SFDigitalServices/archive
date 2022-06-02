@@ -2,6 +2,7 @@ const { setWorldConstructor, defineParameterType, Given, When, Then } = require(
 const fetch = require('node-fetch')
 const expect = require('expect')
 const { URL } = require('url')
+const { getEnvTestUrl, envsubst } = require('./support')
 
 require('dotenv').config()
 
@@ -24,10 +25,12 @@ Given('request headers:', function (data) {
 })
 
 When('I visit {url}', async function (url) {
+  url = envsubst(url)
   await this.load(url)
 })
 
 Then('I should be redirected to {url}', function (url) {
+  url = envsubst(url)
   expect(this.response.status).toBe(302)
   expect(this.response.headers.get('Location')).toEqual(url)
 })
@@ -37,22 +40,38 @@ Then('I should get status code {int}', function (code) {
 })
 
 Then('I should get header {string} containing {string}', function (name, value) {
+  value = envsubst(value)
   expect(this.response.headers.get(name)).toContain(value)
 })
 
 Then('I should get header {string}', function (headerString) {
-  const [name, value] = headerString.split(': ')
+  const [name, value] = envsubst(headerString).split(': ')
   expect(this.response.headers.get(name)).toEqual(value)
 })
 
 Then('I should get HTML title {string}', async function (title) {
-  await expect(this.content).resolves.toContain(`<title>${title}</title>`)
+  const html = `<title>${envsubst(title)}</title>`
+  await expect(this.content).resolves.toContain(html)
 })
 
 setWorldConstructor(class RequestWorld {
   constructor ({ attach, parameters }) {
     this.attach = attach
     this.parameters = parameters
+    this._headers = {}
+  }
+
+  get headers () {
+    return this._headers
+  }
+
+  set headers (values) {
+    this._headers = Object.fromEntries(
+      Object.entries(values).map(([key, value]) => [
+        key,
+        envsubst(value)
+      ])
+    )
   }
   
   get baseUrl () {
@@ -81,8 +100,12 @@ setWorldConstructor(class RequestWorld {
 
   async load (url, options = {}) {
     const fullUrl = this.getFullUrl(url)
+    const { headers } = this
+    if (process.env.DEBUG == 1) {
+      console.info('loading: %s', fullUrl, 'with', headers)
+    }
     const res = await fetch(fullUrl, {
-      headers: this.headers,
+      headers,
       redirect: 'manual',
       ...options
     })
@@ -95,12 +118,3 @@ setWorldConstructor(class RequestWorld {
       : this.response.text()
   }
 })
-
-function getEnvTestUrl () {
-  const { TEST_BASE_URL, PORT } = process.env
-  if (TEST_BASE_URL) {
-    const url = new URL(TEST_BASE_URL)
-    if (PORT && !url.port) url.port = PORT
-    return url.toString()
-  }
-}
