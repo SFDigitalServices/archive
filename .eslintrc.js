@@ -1,4 +1,3 @@
-/** @type {import('eslint').ESLint.Options} */
 module.exports = {
   plugins: ['sfgov'],
   extends: [
