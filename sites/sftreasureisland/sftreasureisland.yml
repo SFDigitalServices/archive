@@ -1,0 +1,6 @@
+archive:
+  collection_id: 18901
+  base_url: https://sftreasureisland.org
+
+redirects:
+  - file: sftreasureisland.tsv
