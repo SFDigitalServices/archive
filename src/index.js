@@ -37,11 +37,11 @@ module.exports = {
 }
 
 /**
- * 
- * @param {string} path 
+ *
+ * @param {string} path
  * @returns {object}
  */
- async function loadConfig (path) {
+async function loadConfig (path) {
   console.log('loading site config:', path)
   const config = await readYAML(path)
   config.path = path
@@ -49,8 +49,8 @@ module.exports = {
 }
 
 /**
- * 
- * @param {string} path 
+ *
+ * @param {string} path
  * @returns {import('./types').SiteConfigData}
  */
 async function readYAML (path) {
@@ -59,8 +59,8 @@ async function readYAML (path) {
 }
 
 /**
- * 
- * @param {import('./types').SiteConfigData} config 
+ *
+ * @param {import('./types').SiteConfigData} config
  * @returns {Promise<import('express').Router>}
  */
 async function createSiteRouter (config) {
@@ -85,6 +85,8 @@ async function createSiteRouter (config) {
     ? getHostnames(...hostnames)
     : getHostnames(baseHostname)
   if (allHostnames.length === 0) {
+    console.warn('No hostnames found in %s; no router will be created', config.path)
+    return (req, res, next) => next('router')
   } else {
     for (const hostname of allHostnames) {
       console.log('+ host: %s (%s)', hostname, config.path)
@@ -107,7 +109,7 @@ async function createSiteRouter (config) {
       const archiveType = req.query[ARCHIVE_TYPE_QUERY_PARAM] || req.get(ARCHIVE_TYPE_HEADER)
 
       /**
-       * 
+       *
        */
       if (archiveType === ARCHIVE_TYPE_NONE || (!redirect && !archiveActive)) {
         const passThroughUrl = new URL(`${baseUrl}${req.originalUrl}`)
@@ -123,10 +125,10 @@ async function createSiteRouter (config) {
 }
 
 /**
- * 
- * @param {string} uri 
- * @param {{ baseUrl: string, collectionId: string | number }} options 
- * @returns 
+ *
+ * @param {string} uri
+ * @param {{ baseUrl: string, collectionId: string | number }} options
+ * @returns
  */
 function getArchiveUrl (uri, { baseUrl, collectionId }) {
   const collectionPath = collectionId ?? `org-${ARCHIVE_IT_ORG_ID}`
@@ -134,8 +136,8 @@ function getArchiveUrl (uri, { baseUrl, collectionId }) {
 }
 
 /**
- * 
- * @param  {...string} urls 
+ *
+ * @param  {...string} urls
  * @returns {string[]}
  */
 function getHostnames (...urls) {
@@ -162,9 +164,9 @@ function unique (value, index, list) {
 }
 
 /**
- * 
- * @param {import('./types').RedirectEntry[]} sources 
- * @param {string} relativeToPath 
+ *
+ * @param {import('./types').RedirectEntry[]} sources
+ * @param {string} relativeToPath
  * @returns {Promise<Map<string, string>>}
  */
 async function loadRedirects (sources, relativeToPath = '.') {
@@ -188,8 +190,8 @@ async function loadRedirects (sources, relativeToPath = '.') {
 }
 
 /**
- * 
- * @param {string} path 
+ *
+ * @param {string} path
  * @returns {Promise<string[][]>}
  */
 async function loadRedirectMap (path) {
@@ -202,10 +204,10 @@ async function loadRedirectMap (path) {
 }
 
 /**
- * 
- * @param {string[]} uris 
- * @param {Map<string, string>} redirectMap 
- * @returns 
+ *
+ * @param {string[]} uris
+ * @param {Map<string, string>} redirectMap
+ * @returns
  */
 function resolveRedirect (uris, redirectMap) {
   let uri = uris.find(uri => redirectMap.has(uri))

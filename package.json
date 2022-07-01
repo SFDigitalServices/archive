@@ -7,7 +7,8 @@
     "develop": "run-p start test:watch",
     "start": "nodemon --config nodemon.develop.json server.js",
     "test": "cucumber-js",
-    "test:watch": "watchy -d 1 -w '**/*.feature' -w cucumber.js -w server.js -- cucumber-js"
+    "test:watch": "watchy -d 1 -w '**/*.feature' -w cucumber.js -w server.js -- cucumber-js",
+    "lint": "eslint *.js src"
   },
   "dependencies": {
     "anymatch": "^3.1.2",

@@ -9,6 +9,7 @@ module.exports = {
     node: true
   },
   rules: {
-    'promise/catch-or-return': null
+    'promise/always-return': 0,
+    'promise/catch-or-return': 0
   }
 }
