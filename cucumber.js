@@ -1,3 +1,15 @@
 module.exports = {
-  default: '--tags "not @skip" --publish-quiet'
+  default: {
+    require: [
+      './src/steps.js'
+    ],
+    paths: [
+      'features/**/*.feature',
+      'sites/**/*.feature'
+    ],
+    publishQuiet: true,
+    tags: 'not @skip',
+    retryTagFilter: '@flaky',
+    retry: 3
+  }
 }

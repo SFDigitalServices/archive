@@ -3,9 +3,12 @@ const fetch = require('node-fetch')
 const expect = require('expect')
 const { URL } = require('url')
 
+const REDIRECT_PERMANENT = 301
+const REDIRECT_TEMPORARY = 302
+
 require('dotenv').config()
 
-// console.info('TEST_BASE_URL:', process.env.TEST_BASE_URL)
+const { TEST_BASE_URL, PORT } = process.env
 
 defineParameterType({
   name: 'url',
@@ -28,7 +31,17 @@ When('I visit {url}', async function (url) {
 })
 
 Then('I should be redirected to {url}', function (url) {
-  expect(this.response.status).toBe(302)
+  expect([REDIRECT_PERMANENT, REDIRECT_TEMPORARY]).toContain(this.response.status)
+  expect(this.response.headers.get('Location')).toEqual(url)
+})
+
+Then('I should be redirected permanently to {url}', function (url) {
+  expect(this.response.status).toBe(REDIRECT_PERMANENT)
+  expect(this.response.headers.get('Location')).toEqual(url)
+})
+
+Then('I should be redirected temporarily to {url}', function (url) {
+  expect(this.response.status).toBe(REDIRECT_TEMPORARY)
   expect(this.response.headers.get('Location')).toEqual(url)
 })
 
@@ -54,9 +67,9 @@ setWorldConstructor(class RequestWorld {
     this.attach = attach
     this.parameters = parameters
   }
-  
+
   get baseUrl () {
-    const url =  this._baseUrl || this.parameters.baseUrl || getEnvTestUrl()
+    const url = this._baseUrl || this.parameters.baseUrl || getEnvTestUrl()
     if (!url) {
       throw new Error(`Cannot determine base URL from parameters: ${JSON.stringify(this.parameters, null, 2)}`)
     }
@@ -97,10 +110,14 @@ setWorldConstructor(class RequestWorld {
 })
 
 function getEnvTestUrl () {
-  const { TEST_BASE_URL, PORT } = process.env
   if (TEST_BASE_URL) {
     const url = new URL(TEST_BASE_URL)
     if (PORT && !url.port) url.port = PORT
     return url.toString()
+  } else {
+    if (!PORT) {
+      throw new Error('getEnvTestUrl() needs $PORT if $TEST_BASE_URL is unset')
+    }
+    return `http://localhost:${PORT}`
   }
 }
