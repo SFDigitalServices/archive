@@ -4,8 +4,10 @@ const { readFile } = require('fs/promises')
 const { URL } = require('url')
 const { dirname, join } = require('path')
 const { default: anymatch } = require('anymatch')
+const { unique, expandEnvVars } = require('./utils')
 
 const {
+  // 571 is the SF Digital Services/SF.gov account
   ARCHIVE_IT_ORG_ID = '571'
 } = process.env
 
@@ -63,7 +65,7 @@ async function readYAML (path) {
  * @param {import('./types').SiteConfigData} config
  * @returns {Promise<import('express').Router>}
  */
-async function createSiteRouter (config) {
+async function createSiteRouter (config, env = {}) {
   const {
     archive: {
       collection_id: collectionId,
@@ -143,6 +145,8 @@ function getArchiveUrl (uri, { baseUrl, collectionId }) {
 function getHostnames (...urls) {
   return urls
     .flatMap(hostname => {
+      // a "^" at the beginning indicates an exact domain match only
+      // (no automatic subdomains or wildcards)
       if (hostname.startsWith('^')) {
         return hostname.substring(1)
       } else
@@ -157,10 +161,7 @@ function getHostnames (...urls) {
       ]
     })
     .filter(unique)
-}
-
-function unique (value, index, list) {
-  return list.indexOf(value) === index
+    .map(host => expandEnvVars(host))
 }
 
 /**

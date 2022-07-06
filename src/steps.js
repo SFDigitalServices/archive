@@ -2,9 +2,11 @@ const { setWorldConstructor, defineParameterType, Given, When, Then } = require(
 const fetch = require('node-fetch')
 const expect = require('expect')
 const { URL } = require('url')
+const { expandEnvVars } = require('./utils')
 
 const REDIRECT_PERMANENT = 301
 const REDIRECT_TEMPORARY = 302
+const anyRedirectStatus = [REDIRECT_PERMANENT, REDIRECT_TEMPORARY]
 
 require('dotenv').config()
 
@@ -13,8 +15,16 @@ const { TEST_BASE_URL, PORT } = process.env
 defineParameterType({
   name: 'url',
   regexp: /[^\s]+/,
-  transform (str) {
-    return this.getFullUrl(str)
+  transformer (str) {
+    return expandEnvVars(str)
+  }
+})
+
+defineParameterType({
+  name: 'header',
+  regexp: /[^:\s]+:\s+.+/,
+  transformer (str) {
+    return str.split(/:\s+/, 2)
   }
 })
 
@@ -22,27 +32,30 @@ Given('test base URL {url}', function (url) {
   this.baseUrl = url
 })
 
+Given('request header {header}', function ([name, value]) {
+  this.headers[name] = expandEnvVars(value)
+})
+
 Given('request headers:', function (data) {
-  this.headers = Object.fromEntries(data.rawTable)
+  this.headers = Object.fromEntries(
+    data.rawTable.map(row => row.map(expandEnvVars))
+  )
 })
 
 When('I visit {url}', async function (url) {
-  await this.load(url)
+  await this.load(expandEnvVars(url))
 })
 
 Then('I should be redirected to {url}', function (url) {
-  expect([REDIRECT_PERMANENT, REDIRECT_TEMPORARY]).toContain(this.response.status)
-  expect(this.response.headers.get('Location')).toEqual(url)
+  expect(this.response).toRedirectTo(expandEnvVars(url))
 })
 
 Then('I should be redirected permanently to {url}', function (url) {
-  expect(this.response.status).toBe(REDIRECT_PERMANENT)
-  expect(this.response.headers.get('Location')).toEqual(url)
+  expect(this.response).toRedirectTo(expandEnvVars(url), REDIRECT_PERMANENT)
 })
 
 Then('I should be redirected temporarily to {url}', function (url) {
-  expect(this.response.status).toBe(REDIRECT_TEMPORARY)
-  expect(this.response.headers.get('Location')).toEqual(url)
+  expect(this.response).toRedirectTo(expandEnvVars(url), REDIRECT_TEMPORARY)
 })
 
 Then('I should get status code {int}', function (code) {
@@ -50,12 +63,11 @@ Then('I should get status code {int}', function (code) {
 })
 
 Then('I should get header {string} containing {string}', function (name, value) {
-  expect(this.response.headers.get(name)).toContain(value)
+  expect(this.response.headers.get(name)).toContain(expandEnvVars(value))
 })
 
-Then('I should get header {string}', function (headerString) {
-  const [name, value] = headerString.split(': ')
-  expect(this.response.headers.get(name)).toEqual(value)
+Then('I should get header {header}', function ([name, value]) {
+  expect(this.response.headers.get(name)).toEqual(expandEnvVars(value))
 })
 
 Then('I should get HTML title {string}', async function (title) {
@@ -66,6 +78,7 @@ setWorldConstructor(class RequestWorld {
   constructor ({ attach, parameters }) {
     this.attach = attach
     this.parameters = parameters
+    this.headers = {}
   }
 
   get baseUrl () {
@@ -94,6 +107,7 @@ setWorldConstructor(class RequestWorld {
 
   async load (url, options = {}) {
     const fullUrl = this.getFullUrl(url)
+    console.warn("curl '%s' %s", fullUrl, Object.entries(this.headers).map(([h, v]) => `-H '${h}: ${v}'`).join(' '))
     const res = await fetch(fullUrl, {
       headers: this.headers,
       redirect: 'manual',
@@ -121,3 +135,21 @@ function getEnvTestUrl () {
     return `http://localhost:${PORT}`
   }
 }
+
+expect.extend({
+  toRedirectTo (req, urlOrPattern, expectedStatus) {
+    const matchesStatus = expectedStatus
+      ? req.status === expectedStatus
+      : anyRedirectStatus.includes(req.status)
+    const locationHeader = req.headers.get('Location')
+    const locationMatch = locationHeader === urlOrPattern
+    return {
+      pass: matchesStatus && locationMatch,
+      message () {
+        return matchesStatus
+          ? `Expected Location header to match:\n\t${urlOrPattern}\nbut got:\n\t${locationHeader}`
+          : `Expected HTTP status ${expectedStatus || anyRedirectStatus.join(' or ')}, but got ${req.status}`
+      }
+    }
+  }
+})
