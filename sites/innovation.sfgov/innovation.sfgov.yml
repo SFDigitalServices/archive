@@ -2,6 +2,9 @@ archive:
   collection_id: 19260
   base_url: https://innovation.sfgov.org
 
+hostnames:
+  - '${TEST_SUBDOMAIN}innovation.sfgov.org'
+
 redirects:
   - map:
       /: https://sf.gov/departments/mayors-office-innovation
