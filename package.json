@@ -6,7 +6,8 @@
   "scripts": {
     "develop": "run-p start test:watch",
     "start": "nodemon --config nodemon.develop.json server.js",
-    "test": "cucumber-js",
+    "test": "jest --passWithNoTests",
+    "test:integration": "cucumber-js",
     "test:watch": "watchy -d 1 -w '**/*.feature' -w '{src,}/**/*.js' -w 'sites/**' -w package.json -w .env -- npm test",
     "lint": "eslint ."
   },
@@ -24,6 +25,7 @@
     "eslint": "^7.32.0",
     "eslint-plugin-sfgov": "^2.0.0",
     "expect": "^27.5.1",
+    "jest": "^28.1.2",
     "node-fetch": "^2.6.7",
     "watchy": "^0.10.0"
   }
