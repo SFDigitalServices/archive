@@ -8,8 +8,6 @@ const REDIRECT_PERMANENT = 301
 const REDIRECT_TEMPORARY = 302
 const anyRedirectStatus = [REDIRECT_PERMANENT, REDIRECT_TEMPORARY]
 
-require('dotenv').config()
-
 const { TEST_BASE_URL, PORT } = process.env
 
 defineParameterType({
