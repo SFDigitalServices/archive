@@ -15,7 +15,7 @@ jobs:
           node-version: 16
       - run: npm install
       - name: set HEROKU_APP
-        run: echo HEROKU_APP="$(scripts/get-app-name.js) >> $GITHUB_ENV
+        run: echo HEROKU_APP="$(scripts/get-app-name.js)" >> $GITHUB_ENV
       - name: set TEST_SUBDOMAIN
         if: env.HEROKU_APP != ''
         run: echo TEST_SUBDOMAIN="${HEROKU_APP}." >> $GITHUB_ENV
