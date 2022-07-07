@@ -2,7 +2,7 @@ const { setWorldConstructor, defineParameterType, Given, When, Then } = require(
 const fetch = require('node-fetch')
 const expect = require('expect')
 const { URL } = require('url')
-const { expandEnvVars } = require('./utils')
+const { expandEnvVars } = require('../src/utils')
 
 const REDIRECT_PERMANENT = 301
 const REDIRECT_TEMPORARY = 302

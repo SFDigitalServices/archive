@@ -1,7 +1,7 @@
 module.exports = {
   default: {
     require: [
-      './src/steps.js'
+      './features/setup.js'
     ],
     paths: [
       'features/**/*.feature',
