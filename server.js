@@ -1,6 +1,6 @@
 const express = require('express')
 const globby = require('globby')
-const { loadConfig, createSiteRouter } = require('./src')
+const { loadConfig, createSiteRouter } = require('./src/sites')
 
 const { NODE_ENV } = process.env
 if (NODE_ENV !== 'production') {

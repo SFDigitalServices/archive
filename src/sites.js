@@ -1,10 +1,9 @@
 const { Router } = require('express')
-const yaml = require('js-yaml')
 const { readFile } = require('fs/promises')
 const { URL } = require('url')
 const { dirname, join } = require('path')
 const { default: anymatch } = require('anymatch')
-const { unique, expandEnvVars } = require('./utils')
+const { unique, expandEnvVars, readYAML } = require('./utils')
 const globby = require('globby')
 
 const {
@@ -32,7 +31,6 @@ module.exports = {
   loadConfig,
   loadAllSites,
   createSiteRouter,
-  readYAML,
   getArchiveUrl,
   loadRedirects,
   loadRedirectMap,
@@ -43,7 +41,7 @@ module.exports = {
 /**
  *
  * @param {string} path
- * @returns {{ path: string } | Record<string,string>}
+ * @returns {import('..').SiteConfigData}
  */
 async function loadConfig (path) {
   console.log('loading site config:', path)
@@ -66,17 +64,7 @@ async function loadAllSites (cwd = 'sites') {
 
 /**
  *
- * @param {string} path
- * @returns {Promise<import('./types').SiteConfigData>}
- */
-async function readYAML (path) {
-  const data = await readFile(path, 'utf8')
-  return yaml.load(data)
-}
-
-/**
- *
- * @param {import('./types').SiteConfigData} config
+ * @param {import('../').SiteConfigData} config
  * @returns {Promise<import('express').Router>}
  */
 async function createSiteRouter (config, env = {}) {
@@ -180,7 +168,7 @@ function getHostnames (...urls) {
 
 /**
  *
- * @param {import('./types').RedirectEntry[]} sources
+ * @param {import('..').RedirectEntry[]} sources
  * @param {string} relativeToPath
  * @returns {Promise<Map<string, string>>}
  */
