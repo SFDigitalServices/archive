@@ -8,7 +8,7 @@
     "start": "nodemon --config nodemon.develop.json server.js",
     "test": "cucumber-js",
     "test:watch": "watchy -d 1 -w '**/*.feature' -w '{src,}/**/*.js' -w 'sites/**' -w package.json -w .env -- npm test",
-    "lint": "eslint src '*.js' scripts"
+    "lint": "eslint ."
   },
   "dependencies": {
     "anymatch": "^3.1.2",
@@ -22,7 +22,7 @@
   "devDependencies": {
     "@cucumber/cucumber": "^8.4.0",
     "eslint": "^7.32.0",
-    "eslint-plugin-sfgov": "^1.0.0",
+    "eslint-plugin-sfgov": "^2.0.0",
     "expect": "^27.5.1",
     "node-fetch": "^2.6.7",
     "watchy": "^0.10.0"
