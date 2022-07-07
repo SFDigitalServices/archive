@@ -1,22 +1,41 @@
 name: deployment
 on:
   deployment_status:
+  workflow_dispatch:
+    inputs:
+      test_base_url:
+        description: |
+          The fully-qualified base URL of the app to test, e.g. "https://sfgov-archive.herokuapp.com"
+        required: false
+      test_subdomain:
+        description: |
+          The optional prefix for all hosts outside of the base URL hostname. This is necessary when
+          testing on Heroku review apps, and is usually specified as "sfgov-archive-pr-XX" where "XX"
+          is the pull request number.
+        required: false
 
 jobs:
   integration-test:
-    if: github.event.deployment_status.state == 'success' && github.event.deployment.payload.web_url
     runs-on: ubuntu-latest
-    env:
-      TEST_BASE_URL: ${{ github.event.deployment.payload.web_url }}
     steps:
+      - name: set TEST_BASE_URL from inputs.test_base_url
+        if: inputs.test_base_url
+        run: echo TEST_BASE_URL="${{ inputs.test_base_url }}" >> $GITHUB_ENV
+      - name: set TEST_BASE_URL from deployment payload
+        if: github.event.deployment_status.state == 'success' && github.event.deployment.payload.web_url
+        run: echo TEST_BASE_URL="${{ github.event.deployment.payload.web_url }}" >> $GITHUB_ENV
+      - name: set TEST_SUBDOMAIN from inputs.test_subdomain
+        if: inputs.test_subdomain
+        run: echo TEST_SUBDOMAIN="${{ inputs.test_subdomain }}" >> $GITHUB_ENV
+      - name: derive TEST_SUBDOMAIN from TEST_BASE_URL
+        if: env.TEST_SUBDOMAIN == null
+        run: |
+          export HEROKU_APP="$(scripts/get-app-name.js $TEST_BASE_URL)"
+          [[ -z "$HEROKU_APP" ]] || (echo TEST_SUBDOMAIN="${HEROKU_APP}." >> $GITHUB_ENV)
+
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
         with:
           node-version: 16
       - run: npm install
-      - name: set HEROKU_APP
-        run: echo HEROKU_APP="$(scripts/get-app-name.js $TEST_BASE_URL)" >> $GITHUB_ENV
-      - name: set TEST_SUBDOMAIN
-        if: env.HEROKU_APP != ''
-        run: echo TEST_SUBDOMAIN="${HEROKU_APP}." >> $GITHUB_ENV
       - run: npm run test:integration
