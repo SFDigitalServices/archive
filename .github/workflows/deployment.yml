@@ -31,7 +31,7 @@ jobs:
         if: env.TEST_SUBDOMAIN == null
         run: |
           export HEROKU_APP="$(scripts/get-app-name.js $TEST_BASE_URL)"
-          [[ -z "$HEROKU_APP" ]] || (echo TEST_SUBDOMAIN="${HEROKU_APP}." >> $GITHUB_ENV)
+          [ "$HEROKU_APP" != "" ] && (echo TEST_SUBDOMAIN="${HEROKU_APP}." >> $GITHUB_ENV)
 
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
