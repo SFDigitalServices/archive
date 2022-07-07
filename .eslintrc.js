@@ -1,15 +1,19 @@
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
   plugins: ['sfgov'],
-  extends: ['plugin:sfgov/recommended'],
-  parserOptions: {
-    ecmaVersion: 2020
-  },
-  env: {
-    node: true
-  },
+  extends: [
+    'plugin:sfgov/recommended',
+    'plugin:sfgov/node'
+  ],
   rules: {
-    'promise/always-return': 0,
-    'promise/catch-or-return': 0
-  }
+  },
+  reportUnusedDisableDirectives: true,
+  overrides: [
+    {
+      files: 'scripts/**/*.js',
+      rules: {
+        'node/shebang': 0
+      }
+    }
+  ]
 }
