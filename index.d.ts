@@ -1,6 +1,7 @@
 export type ArchiveMetadata = {
   collection_id: number | string
   base_url: string
+  active?: boolean
 }
 
 export type RedirectMapEntry = {
