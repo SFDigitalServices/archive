@@ -4,6 +4,6 @@ archive:
   active: false
 
 hostnames:
-  - archive.sf.gov
-  - sfgov-archive*.herokuapp.com
+  - .archive.sf.gov
+  - 'sfgov-archive*.herokuapp.com'
   - ^localhost

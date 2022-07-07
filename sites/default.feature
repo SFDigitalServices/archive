@@ -1,7 +1,7 @@
 Feature: archive.sf.gov
   Background: Host header
-    Given request headers:
-      | Host | archive.sf.gov |
+    Given request header Host: ${TEST_SUBDOMAIN}archive.sf.gov
+
   Scenario: /
     When I visit /
     Then I should be redirected to https://sf.gov/
