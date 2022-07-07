@@ -64,7 +64,7 @@ async function loadAllSites (cwd = 'sites') {
 
 /**
  *
- * @param {import('../').SiteConfigData} config
+ * @param {import('..').SiteConfigData} config
  * @returns {Promise<import('express').Router>}
  */
 async function createSiteRouter (config, env = {}) {
