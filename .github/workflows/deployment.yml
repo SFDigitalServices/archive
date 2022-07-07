@@ -1,9 +1,9 @@
-name: test
+name: deployment
 on:
   deployment_status:
 
 jobs:
-  test:
+  integration-test:
     if: github.event.deployment_status.state == 'success' && github.event.deployment.payload.web_url
     runs-on: ubuntu-latest
     env:
