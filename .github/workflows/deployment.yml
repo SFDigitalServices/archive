@@ -18,6 +18,11 @@ jobs:
   integration-test:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
       - name: set TEST_BASE_URL from inputs.test_base_url
         if: inputs.test_base_url
         run: echo TEST_BASE_URL="${{ inputs.test_base_url }}" >> $GITHUB_ENV
@@ -38,9 +43,5 @@ jobs:
             echo "HEROKU_APP is empty; not setting TEST_SUBDOMAIN" >> /dev/stderr
           fi
 
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
       - run: npm install
       - run: npm run test:integration
