@@ -13,11 +13,13 @@ if (!PORT) throw new Error('$PORT is unset')
 
 const app = express()
 
+// eslint-disable-next-line promise/catch-or-return
 globby('sites/**/*.yml')
   .then(yamls => Promise.all(
     yamls.map(loadConfig)
   ))
   .then(async configs => {
+    // eslint-disable-next-line promise/always-return
     for (const config of configs) {
       const router = await createSiteRouter(config)
       app.use(router)
