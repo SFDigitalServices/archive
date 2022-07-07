@@ -5,6 +5,7 @@ const { URL } = require('url')
 const { dirname, join } = require('path')
 const { default: anymatch } = require('anymatch')
 const { unique, expandEnvVars } = require('./utils')
+const globby = require('globby')
 
 const {
   // 571 is the SF Digital Services/SF.gov account
@@ -29,6 +30,7 @@ const ARCHIVE_TYPE_HEADER = 'x-archive-type'
 
 module.exports = {
   loadConfig,
+  loadAllSites,
   createSiteRouter,
   readYAML,
   getArchiveUrl,
@@ -41,13 +43,25 @@ module.exports = {
 /**
  *
  * @param {string} path
- * @returns {object}
+ * @returns {{ path: string } | Record<string,string>}
  */
 async function loadConfig (path) {
   console.log('loading site config:', path)
   const config = await readYAML(path)
   config.path = path
   return config
+}
+
+/**
+ * Load all site configs from a directory.
+ *
+ * @param {string} cwd
+ * @returns {Promise<object[]>}
+ */
+async function loadAllSites (cwd = 'sites') {
+  const paths = await globby('**/*.yml', { cwd })
+  const configs = await Promise.all(paths.map(loadConfig))
+  return configs
 }
 
 /**
