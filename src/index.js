@@ -53,7 +53,7 @@ async function loadConfig (path) {
 /**
  *
  * @param {string} path
- * @returns {import('./types').SiteConfigData}
+ * @returns {Promise<import('./types').SiteConfigData>}
  */
 async function readYAML (path) {
   const data = await readFile(path, 'utf8')
