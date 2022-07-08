@@ -4,6 +4,8 @@ const expect = require('expect')
 const { URL } = require('node:url')
 const { expandEnvVars } = require('../src/utils')
 
+require('dotenv').config()
+
 const REDIRECT_PERMANENT = 301
 const REDIRECT_TEMPORARY = 302
 const anyRedirectStatus = [REDIRECT_PERMANENT, REDIRECT_TEMPORARY]
@@ -126,12 +128,10 @@ function getEnvTestUrl () {
     const url = new URL(TEST_BASE_URL)
     if (PORT && !url.port) url.port = PORT
     return url.toString()
-  } else {
-    if (!PORT) {
-      throw new Error('getEnvTestUrl() needs $PORT if $TEST_BASE_URL is unset')
-    }
-    return `http://localhost:${PORT}`
+  } else if (!PORT) {
+    throw new Error('getEnvTestUrl() needs $PORT if $TEST_BASE_URL is unset')
   }
+  return `http://localhost:${PORT}`
 }
 
 expect.extend({
