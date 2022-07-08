@@ -1,7 +1,7 @@
 const express = require('express')
-const { readFile } = require('fs/promises')
-const { URL } = require('url')
-const { dirname, join } = require('path')
+const { readFile } = require('node:fs/promises')
+const { URL } = require('node:url')
+const { dirname, join } = require('node:path')
 const { default: anymatch } = require('anymatch')
 const { unique, expandEnvVars, readYAML } = require('./utils')
 const globby = require('globby')
@@ -192,9 +192,9 @@ function getHostnames (...urls) {
  */
 async function loadRedirects (sources, relativeToPath = '.') {
   const map = new Map()
-  for (const { map, file, ...source } of sources) {
-    if (map) {
-      for (const [from, to] of Object.entries(map)) {
+  for (const { map: sourceMap, file, ...source } of sources) {
+    if (sourceMap) {
+      for (const [from, to] of Object.entries(sourceMap)) {
         map.set(from, to)
       }
     } else if (file) {

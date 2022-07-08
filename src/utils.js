@@ -1,5 +1,5 @@
 const yaml = require('js-yaml')
-const { readFile } = require('fs/promises')
+const { readFile } = require('node:fs/promises')
 
 /**
  * @typedef {import('..').SiteConfigData} SiteConfigData

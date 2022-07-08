@@ -1,7 +1,7 @@
 const { setWorldConstructor, defineParameterType, Given, When, Then } = require('@cucumber/cucumber')
 const fetch = require('node-fetch')
 const expect = require('expect')
-const { URL } = require('url')
+const { URL } = require('node:url')
 const { expandEnvVars } = require('../src/utils')
 
 const REDIRECT_PERMANENT = 301
