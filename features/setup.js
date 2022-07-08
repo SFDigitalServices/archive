@@ -12,7 +12,7 @@ const { TEST_BASE_URL, PORT } = process.env
 
 defineParameterType({
   name: 'url',
-  regexp: /[^\s]+/,
+  regexp: /\S+/,
   transformer (str) {
     return expandEnvVars(str)
   }
@@ -20,7 +20,7 @@ defineParameterType({
 
 defineParameterType({
   name: 'header',
-  regexp: /[^:\s]+:\s+.+/,
+  regexp: /[^\s:]+:\s+.+/,
   transformer (str) {
     return str.split(/:\s+/, 2)
   }

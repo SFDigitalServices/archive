@@ -217,7 +217,7 @@ async function loadRedirects (sources, relativeToPath = '.') {
 async function loadRedirectMap (path) {
   const data = await readFile(path, 'utf8')
   return data
-    .split(/[\r\n]+/)
+    .split(/[\n\r]+/)
     .map(line => line.trim())
     .filter(line => line.length && !line.startsWith('#'))
     .map(line => line.split(/\s+/))
