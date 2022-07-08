@@ -11,6 +11,7 @@ const { PORT } = process.env
 if (!PORT) throw new Error('$PORT is unset')
 
 const app = express()
+app.use(express.static('public'))
 
 // eslint-disable-next-line promise/catch-or-return
 loadAllSites('sites')
@@ -25,7 +26,7 @@ loadAllSites('sites')
     const server = app.listen(PORT, () => {
       const { address, port } = server.address()
       const host = address === '::' ? 'localhost' : address
-      console.log('listening on %s:%d', host, port)
+      console.log('listening on http://%s:%d', host, port)
     })
     return server
   })
