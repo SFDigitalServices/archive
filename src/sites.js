@@ -87,13 +87,14 @@ async function createSiteRouter (config, env = {}) {
     },
     hostnames = [],
     redirects = [],
-    static: staticConfig
+    static: staticConfig,
+    path
   } = config
 
   if (!baseUrl) {
-    throw new Error(`No archive.base_url defined in ${config.path}`)
+    throw new Error(`No archive.base_url defined in ${path}`)
   } else if (!collectionId) {
-    console.warn(`No archive.collection_id in ${config.path}; `)
+    console.warn(`No archive.collection_id in ${path}; `)
   }
 
   const baseHostname = new URL(baseUrl).hostname
@@ -101,15 +102,15 @@ async function createSiteRouter (config, env = {}) {
     ? getHostnames(...hostnames)
     : getHostnames(baseHostname)
   if (allHostnames.length === 0) {
-    console.warn('No hostnames found in %s; no router will be created', config.path)
+    console.warn('No hostnames found in %s; no router will be created', path)
     return (req, res, next) => next('router')
   } else {
     for (const hostname of allHostnames) {
-      console.log('+ host: %s (%s)', hostname, config.path)
+      console.log('+ host: %s (%s)', hostname, path)
     }
   }
 
-  const relativeDir = dirname(config.path)
+  const relativeDir = dirname(path)
   const redirectMap = await loadRedirects(redirects, relativeDir)
   const hostMatch = anymatch(allHostnames)
   const router = express.Router({
@@ -191,13 +192,13 @@ function getHostnames (...urls) {
  */
 async function loadRedirects (sources, relativeToPath = '.') {
   const map = new Map()
-  for (const source of sources) {
-    if (source?.map) {
-      for (const [from, to] of Object.entries(source.map)) {
+  for (const { map, file, ...source } of sources) {
+    if (map) {
+      for (const [from, to] of Object.entries(map)) {
         map.set(from, to)
       }
-    } else if (source.file) {
-      const path = join(relativeToPath, source.file)
+    } else if (file) {
+      const path = join(relativeToPath, file)
       const lines = await loadRedirectMap(path)
       for (const [from, to] of lines) {
         map.set(from, to)
