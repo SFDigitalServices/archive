@@ -1,6 +1,5 @@
 const express = require('express')
-const globby = require('globby')
-const { loadConfig, createSiteRouter } = require('./src/sites')
+const { createSiteRouter, loadAllSites } = require('./src/sites')
 
 const { NODE_ENV } = process.env
 if (NODE_ENV !== 'production') {
@@ -14,10 +13,7 @@ if (!PORT) throw new Error('$PORT is unset')
 const app = express()
 
 // eslint-disable-next-line promise/catch-or-return
-globby('sites/**/*.yml')
-  .then(yamls => Promise.all(
-    yamls.map(loadConfig)
-  ))
+loadAllSites('sites')
   .then(async configs => {
     // eslint-disable-next-line promise/always-return
     for (const config of configs) {

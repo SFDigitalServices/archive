@@ -5,6 +5,10 @@ const { dirname, join } = require('path')
 const { default: anymatch } = require('anymatch')
 const { unique, expandEnvVars, readYAML } = require('./utils')
 const globby = require('globby')
+/**
+ * @typedef {import('..').SiteConfigData} SiteConfigData
+ * @typedef {import('..').RedirectEntry} RedirectEntry
+ */
 
 const {
   // 571 is the SF Digital Services/SF.gov account
@@ -41,7 +45,7 @@ module.exports = {
 /**
  *
  * @param {string} path
- * @returns {import('..').SiteConfigData}
+ * @returns {SiteConfigData}
  */
 async function loadConfig (path) {
   console.log('loading site config:', path)
@@ -54,18 +58,20 @@ async function loadConfig (path) {
  * Load all site configs from a directory.
  *
  * @param {string} cwd
- * @returns {Promise<object[]>}
+* @returns {Promise<SiteConfigData[]>}
  */
-async function loadAllSites (cwd = 'sites') {
+async function loadAllSites (cwd = '.') {
   const paths = await globby('**/*.yml', { cwd })
-  const configs = await Promise.all(paths.map(loadConfig))
+  const configs = await Promise.all(
+    paths.map(path => loadConfig(join(cwd, path)))
+  )
   return configs
 }
 
 /**
  *
- * @param {import('..').SiteConfigData} config
- * @returns {Promise<import('express').Router>}
+ * @param {SiteConfigData} config
+ * @returns {Promise<Router>}
  */
 async function createSiteRouter (config, env = {}) {
   const {
@@ -168,7 +174,7 @@ function getHostnames (...urls) {
 
 /**
  *
- * @param {import('..').RedirectEntry[]} sources
+ * @param {RedirectEntry[]} sources
  * @param {string} relativeToPath
  * @returns {Promise<Map<string, string>>}
  */

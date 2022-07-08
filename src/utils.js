@@ -1,6 +1,10 @@
 const yaml = require('js-yaml')
 const { readFile } = require('fs/promises')
 
+/**
+ * @typedef {import('..').SiteConfigData} SiteConfigData
+ */
+
 module.exports = {
   expandEnvVars,
   readYAML,
@@ -20,7 +24,7 @@ function unique (value, index, list) {
 /**
  *
  * @param {string} path
- * @returns {import('..').SiteConfigData}
+ * @returns {SiteConfigData}
  */
 async function readYAML (path) {
   const data = await readFile(path, 'utf8')
