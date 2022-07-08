@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { URL } = require('url')
+const { URL } = require('node:url')
 const [url = ''] = process.argv.slice(2)
 if (url?.includes('.herokuapp.com')) {
   try {
