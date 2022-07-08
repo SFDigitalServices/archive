@@ -1,15 +1,20 @@
 const express = require('express')
-const { createSiteRouter, loadAllSites } = require('./sites')
+const { createSiteRouter, loadSites } = require('./sites')
 
 /**
  *
- * @param {{ port: number }} options
+ * @param {{ cwd?: string }} options
  * @returns {Promise<express.Application>}
  */
 module.exports = async function createApp (options) {
-  const app = express()
+  const {
+    cwd = '.'
+  } = options || {}
 
-  const sites = await loadAllSites('sites')
+  const app = express()
+    .disable('x-powered-by')
+
+  const sites = await loadSites('sites/**/*.yml', { cwd })
   for (const site of sites) {
     const router = await createSiteRouter(site)
     app.use(router)

@@ -6,6 +6,7 @@ const { default: anymatch } = require('anymatch')
 const { unique, expandEnvVars, readYAML } = require('./utils')
 const globby = require('globby')
 const vhost = require('vhost')
+
 /**
  * @typedef {import('..').SiteConfigData} SiteConfigData
  * @typedef {import('..').RedirectEntry} RedirectEntry
@@ -21,7 +22,9 @@ const REDIRECT_PERMANENT = 301
 const REDIRECT_TEMPORARY = 302
 const ARCHIVE_BASE_URL = 'https://wayback.archive-it.org'
 
-const AUTOMATIC_SUBDOMAINS = ['www']
+// subdomains that should be implicitly/automatically respected
+// for every unique hostname in each site
+const IMPLICIT_SUBDOMAINS = ['www']
 
 // this query string parameter tells us which type of URL to get...
 const ARCHIVE_TYPE_QUERY_PARAM = 'archive'
@@ -33,8 +36,8 @@ const ARCHIVE_TYPE_NONE = 'none'
 const ARCHIVE_TYPE_HEADER = 'x-archive-type'
 
 module.exports = {
-  loadConfig,
-  loadAllSites,
+  loadSite,
+  loadSites,
   createSiteRouter,
   getArchiveUrl,
   loadRedirects,
@@ -48,7 +51,7 @@ module.exports = {
  * @param {string} path
  * @returns {SiteConfigData}
  */
-async function loadConfig (path) {
+async function loadSite (path) {
   console.log('loading site config:', path)
   const config = await readYAML(path)
   config.path = path
@@ -58,13 +61,14 @@ async function loadConfig (path) {
 /**
  * Load all site configs from a directory.
  *
- * @param {string} cwd
-* @returns {Promise<SiteConfigData[]>}
+ * @param {string | string[]} globs
+ * @param {{ cwd?: string }} cwd
+ * @returns {Promise<SiteConfigData[]>}
  */
-async function loadAllSites (cwd = '.') {
-  const paths = await globby('**/*.yml', { cwd })
+async function loadSites (globs, { cwd = '.' }) {
+  const paths = await globby(globs, { cwd })
   const configs = await Promise.all(
-    paths.map(path => loadConfig(join(cwd, path)))
+    paths.map(path => loadSite(join(cwd, path)))
   )
   return configs
 }
@@ -172,7 +176,7 @@ function getHostnames (...urls) {
       }
       return [
         hostname,
-        ...AUTOMATIC_SUBDOMAINS.map(sub => `${sub}.${hostname}`)
+        ...IMPLICIT_SUBDOMAINS.map(sub => `${sub}.${hostname}`)
       ]
     })
     .filter(unique)
