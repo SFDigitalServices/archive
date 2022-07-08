@@ -9,8 +9,15 @@ const { PORT } = process.env
 
 if (!PORT) throw new Error('$PORT is unset')
 
-createApp({})
+createApp()
   .then(app => {
+    // disable the X-Powered-By: Express header
+    app.disable('x-powered-by')
+
+    // only trust one level of proxy forwarding
+    // see: <https://expressjs.com/en/guide/behind-proxies.html>
+    app.set('trust proxy', 1)
+
     const server = app.listen(PORT, () => {
       const { address, port } = server.address()
       const host = address === '::' ? 'localhost' : address

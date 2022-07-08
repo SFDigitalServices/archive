@@ -2,8 +2,12 @@ const express = require('express')
 const { createSiteRouter, loadSites } = require('./sites')
 
 /**
+ * @typedef {import('..').AppOptions} AppOptions
+ */
+
+/**
  *
- * @param {{ cwd?: string }} options
+ * @param {AppOptions} options
  * @returns {Promise<express.Application>}
  */
 module.exports = async function createApp (options) {
@@ -12,7 +16,6 @@ module.exports = async function createApp (options) {
   } = options || {}
 
   const app = express()
-    .disable('x-powered-by')
 
   const sites = await loadSites('sites/**/*.yml', { cwd })
   for (const site of sites) {

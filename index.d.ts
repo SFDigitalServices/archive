@@ -27,3 +27,7 @@ export type SiteConfigData = {
   redirects?: RedirectEntry[]
   static?: StaticConfig
 }
+
+export type AppOptions = {
+  cwd?: string
+}
