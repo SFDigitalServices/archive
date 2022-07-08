@@ -1,10 +1,11 @@
-const { Router } = require('express')
+const express = require('express')
 const { readFile } = require('fs/promises')
 const { URL } = require('url')
 const { dirname, join } = require('path')
 const { default: anymatch } = require('anymatch')
 const { unique, expandEnvVars, readYAML } = require('./utils')
 const globby = require('globby')
+const vhost = require('vhost')
 /**
  * @typedef {import('..').SiteConfigData} SiteConfigData
  * @typedef {import('..').RedirectEntry} RedirectEntry
@@ -81,7 +82,8 @@ async function createSiteRouter (config, env = {}) {
       active: archiveActive = true
     },
     hostnames = [],
-    redirects = []
+    redirects = [],
+    static: staticConfig
   } = config
 
   if (!baseUrl) {
@@ -106,32 +108,37 @@ async function createSiteRouter (config, env = {}) {
   const relativeDir = dirname(config.path)
   const redirectMap = await loadRedirects(redirects, relativeDir)
   const hostMatch = anymatch(allHostnames)
-  return Router({
+  const router = express.Router({
     caseSensitive: true,
     mergeParams: true
   })
-    .use((req, res, next) => {
-      if (!hostMatch(req.hostname)) {
-        return next('router')
-      }
 
-      const redirect = resolveRedirect([req.path, req.originalUrl], redirectMap)
-      const archiveType = req.query[ARCHIVE_TYPE_QUERY_PARAM] || req.get(ARCHIVE_TYPE_HEADER)
+  if (staticConfig) {
+    const serveStatic = express.static(staticConfig.path, staticConfig.options)
+    router.use(...allHostnames.map(host => vhost(host, serveStatic)))
+  }
 
-      /**
-       *
-       */
-      if (archiveType === ARCHIVE_TYPE_NONE || (!redirect && !archiveActive)) {
-        const passThroughUrl = new URL(`${baseUrl}${req.originalUrl}`)
-        passThroughUrl.searchParams.delete(ARCHIVE_TYPE_QUERY_PARAM)
-        return res.redirect(REDIRECT_TEMPORARY, String(passThroughUrl))
-      } else if (redirect && archiveType !== ARCHIVE_TYPE_PERMANENT) {
-        return res.redirect(REDIRECT_PERMANENT, redirect)
-      } else {
-        const archiveUrl = getArchiveUrl(req.originalUrl, { baseUrl, collectionId })
-        return res.redirect(REDIRECT_PERMANENT, archiveUrl)
-      }
-    })
+  router.use((req, res, next) => {
+    if (!hostMatch(req.hostname)) {
+      return next('router')
+    }
+
+    const redirect = resolveRedirect([req.path, req.originalUrl], redirectMap)
+    const archiveType = req.query[ARCHIVE_TYPE_QUERY_PARAM] || req.get(ARCHIVE_TYPE_HEADER)
+
+    if (archiveType === ARCHIVE_TYPE_NONE || (!redirect && !archiveActive)) {
+      const passThroughUrl = new URL(`${baseUrl}${req.originalUrl}`)
+      passThroughUrl.searchParams.delete(ARCHIVE_TYPE_QUERY_PARAM)
+      return res.redirect(REDIRECT_TEMPORARY, String(passThroughUrl))
+    } else if (redirect && archiveType !== ARCHIVE_TYPE_PERMANENT) {
+      return res.redirect(REDIRECT_PERMANENT, redirect)
+    } else {
+      const archiveUrl = getArchiveUrl(req.originalUrl, { baseUrl, collectionId })
+      return res.redirect(REDIRECT_PERMANENT, archiveUrl)
+    }
+  })
+
+  return router
 }
 
 /**

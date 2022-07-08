@@ -15,9 +15,15 @@ export type RedirectFileEntry = {
 
 export type RedirectEntry = RedirectMapEntry | RedirectFileEntry
 
+export type StaticConfig = {
+  path: string
+  options?: object
+}
+
 export type SiteConfigData = {
   path: string
   archive: ArchiveMetadata
   hostnames?: string[]
   redirects?: RedirectEntry[]
+  static?: StaticConfig
 }

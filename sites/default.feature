@@ -4,7 +4,13 @@ Feature: archive.sf.gov
 
   Scenario: /
     When I visit /
-    Then I should be redirected to https://sf.gov/
+    Then I should get status code 200
+     And I should get header "Content-type" containing "text/html"
+
+  Scenario: /robots.txt
+    When I visit /robots.txt
+    Then I should get status code 200
+     And I should get header "Content-type" containing "text/plain"
 
   @skip
   Scenario: /sftreasureisland.org/whatever

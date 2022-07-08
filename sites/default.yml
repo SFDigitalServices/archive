@@ -3,6 +3,11 @@ archive:
   # setting this to false disables routing to the archives
   active: false
 
+static:
+  path: public
+  options:
+    fallthrough: true
+
 hostnames:
   - .archive.sf.gov
   - 'sfgov-archive*.herokuapp.com'
