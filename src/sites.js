@@ -168,7 +168,7 @@ function getHostnames (...urls) {
       // a "^" at the beginning indicates an exact domain match only
       // (no automatic subdomains or wildcards)
       if (hostname.startsWith('^')) {
-        return hostname.substring(1)
+        return hostname.slice(1)
       } else
       if (hostname.startsWith('.')) {
         return `*${hostname}`

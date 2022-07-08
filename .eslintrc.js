@@ -20,7 +20,8 @@ module.exports = {
     'unicorn/no-useless-spread': 1,
     'unicorn/no-useless-undefined': 1,
     'unicorn/prefer-node-protocol': 'warn',
-    'unicorn/text-encoding-identifier-case': 1
+    'unicorn/text-encoding-identifier-case': 1,
+    'unicorn/prefer-string-slice': 1
   },
   reportUnusedDisableDirectives: true,
   overrides: [
