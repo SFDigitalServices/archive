@@ -4,8 +4,7 @@ module.exports = {
       require.resolve('../features/setup')
     ],
     paths: [
-      'features/**/*.feature',
-      'config/sites/**/*.feature'
+      'features/**/*.feature'
     ],
     publishQuiet: true,
     tags: 'not @skip',
