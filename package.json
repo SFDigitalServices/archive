@@ -5,11 +5,12 @@
   },
   "scripts": {
     "develop": "run-p start test:watch",
-    "start": "nodemon --config nodemon.develop.json server.js",
-    "test": "jest --passWithNoTests",
-    "test:integration": "cucumber-js",
+    "lint": "eslint .",
+    "start": "nodemon --config config/nodemon.develop.json server.js",
+    "test": "run-s test:unit test:features",
+    "test:features": "cucumber-js --config config/cucumber.js",
     "test:watch": "watchy -d 1 -w '**/*.feature' -w '{src,}/**/*.js' -w 'sites/**' -w package.json -w .env -- npm test",
-    "lint": "eslint ."
+    "test:unit": "jest --passWithNoTests"
   },
   "dependencies": {
     "anymatch": "^3.1.2",

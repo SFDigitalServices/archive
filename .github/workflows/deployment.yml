@@ -44,4 +44,4 @@ jobs:
           fi
 
       - run: npm install
-      - run: npm run test:integration
+      - run: npm run test:features
