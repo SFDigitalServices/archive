@@ -1,11 +1,11 @@
 module.exports = {
   default: {
     require: [
-      './features/setup.js'
+      require.resolve('../features/setup')
     ],
     paths: [
       'features/**/*.feature',
-      'sites/**/*.feature'
+      'config/sites/**/*.feature'
     ],
     publishQuiet: true,
     tags: 'not @skip',
