@@ -29,5 +29,5 @@ export type SiteConfigData = {
 }
 
 export type AppOptions = {
-  cwd?: string
+  sites: SiteConfigData[]
 }

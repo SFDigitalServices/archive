@@ -65,8 +65,9 @@ async function loadSite (path) {
  * @param {{ cwd?: string }} cwd
  * @returns {Promise<SiteConfigData[]>}
  */
-async function loadSites (globs, { cwd = '.' }) {
-  const paths = await globby(globs, { cwd })
+async function loadSites (globs, opts) {
+  const { cwd = '.', ...rest } = opts || {}
+  const paths = await globby(globs, { cwd, ...rest })
   const configs = await Promise.all(
     paths.map(path => loadSite(join(cwd, path)))
   )

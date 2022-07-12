@@ -1,5 +1,5 @@
 const express = require('express')
-const { createSiteRouter, loadSites } = require('./sites')
+const { createSiteRouter } = require('./sites')
 
 /**
  * @typedef {import('..').AppOptions} AppOptions
@@ -12,12 +12,11 @@ const { createSiteRouter, loadSites } = require('./sites')
  */
 module.exports = async function createApp (options) {
   const {
-    cwd = '.'
+    sites = []
   } = options || {}
 
   const app = express()
 
-  const sites = await loadSites('sites/**/*.yml', { cwd })
   for (const site of sites) {
     const router = await createSiteRouter(site)
     app.use(router)

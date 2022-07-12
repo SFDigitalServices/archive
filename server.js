@@ -1,4 +1,5 @@
 const createApp = require('./src/app')
+const { loadSites } = require('./src/sites')
 
 const { NODE_ENV } = process.env
 if (NODE_ENV !== 'production') {
@@ -9,7 +10,8 @@ const { PORT } = process.env
 
 if (!PORT) throw new Error('$PORT is unset')
 
-createApp()
+loadSites('config/sites/**/*.yml')
+  .then(sites => createApp({ sites }))
   .then(app => {
     // disable the X-Powered-By: Express header
     app.disable('x-powered-by')
