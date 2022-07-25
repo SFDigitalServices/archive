@@ -1,6 +1,6 @@
 {
   "recommendations": [
-    "mechatroner.rainbow-csv",
-    "mrmlnc.vscode-apache"
+    "dbaeumer.vscode-eslint",
+    "mechatroner.rainbow-csv"
   ]
 }

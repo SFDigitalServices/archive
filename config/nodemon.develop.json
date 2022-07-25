@@ -1,0 +1,15 @@
+{
+  "verbose": true,
+  "watch": [
+    ".env",
+    "*.js",
+    "src/**/*.js",
+    "sites/**"
+  ],
+  "ext": "js,yml",
+  "ignore": [
+    "*.test.js",
+    "**/__fixtures__",
+    "**/__tests__"
+  ]
+}

@@ -1,7 +1,7 @@
 {
-  "stack": "heroku-20",
+  "stack": "heroku-22",
   "buildpacks": [
-    { "url": "heroku/php" }
+    { "url": "heroku/nodejs" }
   ],
   "addons": [
     "papertrail:choklad"
