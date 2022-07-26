@@ -49,10 +49,10 @@ module.exports = {
 /**
  *
  * @param {string} path
- * @returns {SiteConfigData}
+ * @returns {Promise<SiteConfigData>}
  */
 async function loadSite (path) {
-  console.log('loading site config:', path)
+  console.warn('loading site config:', path)
   const config = await readYAML(path)
   config.path = path
   return config
@@ -107,7 +107,7 @@ async function createSiteRouter (config, env = {}) {
     return (req, res, next) => next('router')
   } else {
     for (const hostname of allHostnames) {
-      console.log('+ host: %s (%s)', hostname, path)
+      console.warn('+ host: %s (%s)', hostname, path)
     }
   }
 
