@@ -2,6 +2,7 @@
 module.exports = {
   plugins: [
     'sfgov',
+    'jest',
     'unicorn'
   ],
   extends: [
@@ -29,6 +30,12 @@ module.exports = {
       files: 'scripts/**/*.js',
       rules: {
         'node/shebang': 0
+      }
+    },
+    {
+      files: '__tests__/**/*.js',
+      env: {
+        jest: true
       }
     }
   ]
