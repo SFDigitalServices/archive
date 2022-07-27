@@ -10,7 +10,7 @@
     "test": "run-s test:unit test:features",
     "test:features": "cucumber-js --config config/cucumber.js",
     "test:watch": "watchy -d 1 -w '**/*.feature' -w '{src,}/**/*.js' -w 'sites/**' -w package.json -w .env -- npm test",
-    "test:unit": "jest --passWithNoTests"
+    "test:unit": "jest"
   },
   "dependencies": {
     "anymatch": "^3.1.2",
@@ -24,12 +24,15 @@
   },
   "devDependencies": {
     "@cucumber/cucumber": "^8.4.0",
+    "@types/jest": "^28.1.6",
     "eslint": "^8.19.0",
+    "eslint-plugin-jest": "^26.6.0",
     "eslint-plugin-sfgov": "^2.0.0",
     "eslint-plugin-unicorn": "^43.0.1",
     "expect": "^27.5.1",
     "jest": "^28.1.2",
     "node-fetch": "^2.6.7",
-    "watchy": "^0.10.0"
+    "watchy": "^0.10.0",
+    "yargs": "^17.5.1"
   }
 }
