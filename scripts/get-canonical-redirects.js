@@ -5,30 +5,34 @@ const { createWriteStream } = require('node:fs')
 const { dirname } = require('node:path')
 const { loadSite, loadRedirects } = require('../src/sites')
 
-const args = require('yargs')
-  .argv
+const args = require('yargs').argv
 
 const [filename, output = '/dev/stdout'] = args._
 
 loadSite(filename)
   .then(async site => {
     const redirects = await loadRedirects(site.redirects || [], dirname(site.path))
-    const baseUrl = site.archive.base_url
+    const baseUrl = new URL(site.archive.base_url)
     console.warn('checking %d redirects...', redirects.size)
+
     const seen = new Set()
     const stream = createWriteStream(output, 'utf8')
     for (const [from, to] of redirects.entries()) {
       const canonical = await getCanonicalUrl(new URL(from, baseUrl))
-      const url = canonical ? new URL(canonical) : undefined
       if (!canonical) {
         continue
-      } else if (url?.pathname === from) {
+      } else if (canonical.hostname === baseUrl.hostname) {
+        // this is a "local" redirect
+        throw new Error('oops')
+      }
+
+      if (canonical.pathname === from) {
         // from is canonical
-      } else if (canonical === to) {
+      } else if (String(canonical) === to) {
         // from is canonical
-      } else if (!redirects.has(url.pathname)) {
-        stream.write(`${url.pathname}\t${to}\n`)
-        seen.add(url.pathname)
+      } else if (!redirects.has(canonical.pathname)) {
+        stream.write(`${canonical.pathname}\t${to}\n`)
+        seen.add(canonical.pathname)
       }
       seen.add(from)
     }
@@ -39,8 +43,10 @@ async function getCanonicalUrl (url) {
   const res = await fetch(url, {
     redirect: 'manual',
     headers: {
+      // this header disables sf.gov redirects
       'user-agent': 'Archive-It'
     }
   })
-  return res.headers.get('location')
+  const location = res.headers.get('location')
+  return location ? new URL(location) : undefined
 }
