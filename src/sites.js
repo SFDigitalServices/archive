@@ -173,8 +173,7 @@ module.exports = {
   loadSites,
   createSiteRouter,
   loadRedirects,
-  loadRedirectMap,
-  getHostnames
+  loadRedirectMap
 }
 
 /**
