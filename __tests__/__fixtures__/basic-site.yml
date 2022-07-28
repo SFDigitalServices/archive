@@ -1,0 +1,9 @@
+archive:
+  base_url: https://sfgov.org/old-url
+
+hostnames:
+  - www.sfgov.org
+
+redirects:
+  - map:
+      /: https://sf.gov/new-url

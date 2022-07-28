@@ -3,13 +3,16 @@ const { readFile } = require('node:fs/promises')
 const { URL } = require('node:url')
 const { dirname, join } = require('node:path')
 const { default: anymatch } = require('anymatch')
-const { unique, expandEnvVars, readYAML } = require('./utils')
+const { unique, expandEnvVars, mergeMaps, readYAML } = require('./utils')
 const globby = require('globby')
 const vhost = require('vhost')
 
 /**
  * @typedef {import('..').SiteConfigData} SiteConfigData
+ * @typedef {import('..').RedirectMap} RedirectMap
  * @typedef {import('..').RedirectEntry} RedirectEntry
+ * @typedef {import('..').RedirectFileEntry} RedirectFileEntry
+ * @typedef {import('..').RedirectMapEntry} RedirectMapEntry
  */
 
 const {
@@ -35,15 +38,143 @@ const ARCHIVE_TYPE_NONE = 'none'
 // you can also set this header to force an archive type
 const ARCHIVE_TYPE_HEADER = 'x-archive-type'
 
+class Site {
+  /**
+   * @param {string} path
+   * @returns {Site}
+   */
+  static async load (path) {
+    const config = await loadSite(path)
+    return new Site(config)
+  }
+
+  /**
+   * @param {SiteConfigData} data
+   * @returns {Site}
+   */
+  constructor (data) {
+    this.config = data
+    this.matchesHost = anymatch(this.hostnames)
+    this.redirects = getInlineRedirects(this.config.redirects)
+  }
+
+  get baseUrl () {
+    // this will throw if either value is empty or invalid
+    return new URL(
+      this.config.base_url ||
+      this.config.archive.base_url
+    )
+  }
+
+  get collectionId () {
+    return this.config.archive?.collection_id
+  }
+
+  get hostname () {
+    return this.baseUrl.hostname
+  }
+
+  /**
+   * @returns {string[]}
+   */
+  get hostnames () {
+    return getHostnames(this.hostname, ...(this.config.hostnames || []))
+  }
+
+  /**
+   * Load file-based redirects from the config into this.redirects,
+   * and return the Map.
+   *
+   * @returns {Promise<RedirectMap>}
+   */
+  async loadRedirects () {
+    const redirects = await loadRedirects(this.config.redirects, dirname(this.config.path))
+    for (const [from, to] of redirects.entries()) {
+      this.redirects.set(from, to)
+    }
+    return this.redirects
+  }
+
+  /**
+   *
+   * @param {string | URL} url
+   * @returns {string | undefined}
+   */
+  resolve (...uris) {
+    let redirect = uris.find(uri => this.redirects.has(uri))
+    // resolve internal redirects
+    while (this.redirects.has(redirect)) {
+      redirect = this.redirects.get(redirect)
+    }
+    return redirect
+  }
+
+  /**
+   * @param {string | undefined} uri
+   * @returns {string | undefined}
+   */
+  getArchiveUrl (uri) {
+    const { baseUrl, collectionId } = this
+    const collectionPath = collectionId ?? `org-${ARCHIVE_IT_ORG_ID}`
+    return `${ARCHIVE_BASE_URL}/${collectionPath}/${TIMESTAMP_LATEST}/${baseUrl}${uri || ''}`
+  }
+
+  /**
+   * @returns {express.Router}
+   */
+  createRouter () {
+    const router = new express.Router()
+    const staticRouter = this.createStaticRouter()
+    if (staticRouter) router.use(staticRouter)
+    router.use(this.createRequestHandler())
+    return router
+  }
+
+  /**
+   * @returns {express.RequestHandler}
+   */
+  createRequestHandler () {
+    return (req, res, next) => {
+      if (!this.matchesHost(req.hostname)) {
+        return next('router')
+      }
+      const redirect = this.resolve([req.originalUrl, req.path])
+      if (redirect) {
+        return res.redirect(redirect, REDIRECT_PERMANENT)
+      } else {
+        const archiveUrl = this.getArchiveUrl(req.originalUrl)
+        if (archiveUrl) {
+          return res.redirect(archiveUrl, REDIRECT_PERMANENT)
+        }
+      }
+      return next('router')
+    }
+  }
+
+  /**
+   * @returns {express.Router}
+   */
+  createStaticRouter () {
+    const { static: staticConfig } = this.config
+    if (!staticConfig) return
+
+    const router = new express.Router()
+    const serveStatic = express.static(staticConfig.path, staticConfig.options)
+    for (const host of this.hostnames) {
+      router.use(vhost(host, serveStatic))
+    }
+    return router
+  }
+}
+
 module.exports = {
+  Site,
   loadSite,
   loadSites,
   createSiteRouter,
-  getArchiveUrl,
   loadRedirects,
   loadRedirectMap,
-  getHostnames,
-  resolveRedirect
+  getHostnames
 }
 
 /**
@@ -52,7 +183,7 @@ module.exports = {
  * @returns {Promise<SiteConfigData>}
  */
 async function loadSite (path) {
-  console.warn('loading site config:', path)
+  // console.warn('loading site config:', path)
   const config = await readYAML(path)
   config.path = path
   return config
@@ -68,10 +199,9 @@ async function loadSite (path) {
 async function loadSites (globs, opts) {
   const { cwd = '.', ...rest } = opts || {}
   const paths = await globby(globs, { cwd, ...rest })
-  const configs = await Promise.all(
+  return Promise.all(
     paths.map(path => loadSite(join(cwd, path)))
   )
-  return configs
 }
 
 /**
@@ -79,7 +209,7 @@ async function loadSites (globs, opts) {
  * @param {SiteConfigData} config
  * @returns {Promise<Router>}
  */
-async function createSiteRouter (config, env = {}) {
+async function createSiteRouter (config) {
   const {
     archive: {
       collection_id: collectionId,
@@ -192,37 +322,60 @@ function getHostnames (...urls) {
  * @returns {Promise<Map<string, string>>}
  */
 async function loadRedirects (sources, relativeToPath = '.') {
-  const map = new Map()
-  for (const { map: sourceMap, file, ...source } of sources) {
-    if (sourceMap) {
-      for (const [from, to] of Object.entries(sourceMap)) {
-        map.set(from, to)
-      }
-    } else if (file) {
-      const path = join(relativeToPath, file)
-      const lines = await loadRedirectMap(path)
-      for (const [from, to] of lines) {
-        map.set(from, to)
-      }
-    } else {
-      console.warn('invalid redirect map source:', source)
-    }
-  }
-  return map
+  const map = getInlineRedirects(sources)
+  const fileMaps = await Promise.all(
+    sources
+      .filter(source => source.file)
+      .map(({ file }) => {
+        const path = relativeToPath ? join(relativeToPath, file) : file
+        return loadRedirectMap(path)
+          .then(lines => new Map(lines))
+      })
+  )
+  return mergeMaps(map, ...fileMaps)
 }
 
 /**
+ * Collect all of the redirect entries with a "map" object
+ * into a single Map (from URI => to URL). Keys are merged
+ * in the order they're defined.
+ *
+ * @param {RedirectMapEntry[]} sources
+ * @returns {Promise<RedirectMap>}
+ */
+function getInlineRedirects (sources) {
+  const map = new Map()
+  if (!sources) return map
+  const entries = sources
+    .filter(source => source.map)
+    .flatMap(source => Object.entries(source.map))
+  return new Map(entries)
+}
+
+/**
+ * Read redirect paths from a file into a single Map. Files are assumed to
+ * consist of zero or more lines with whitespace-separated "columns". Empty
+ * lines and those beginning with "#" are ignored.
+ *
+ * ```
+ * # this is a comment, and will be ignored
+ * # the first and second columns can be separated by any number of spaces or tabs
+ * /foo  https://sf.gov/foo
+ * # any additional "columns" (after the URL) will be ignored
+ * /bar  https://sf.gov # you can put comments here, too
+ * ```
  *
  * @param {string} path
- * @returns {Promise<string[][]>}
+ * @returns {Promise<RedirectMap>}
  */
 async function loadRedirectMap (path) {
   const data = await readFile(path, 'utf8')
-  return data
+  const entries = data
     .split(/[\n\r]+/)
     .map(line => line.trim())
     .filter(line => line.length && !line.startsWith('#'))
     .map(line => line.split(/\s+/))
+  return new Map(entries)
 }
 
 /**
