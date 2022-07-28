@@ -4,13 +4,14 @@ export type ArchiveMetadata = {
   active?: boolean
 }
 
+export type RedirectMap = Map<string, string>
+
 export type RedirectMapEntry = {
   map: Record<string, string>
 }
 
 export type RedirectFileEntry = {
   file: string
-  type?: string
 }
 
 export type RedirectEntry = RedirectMapEntry | RedirectFileEntry
@@ -21,7 +22,7 @@ export type StaticConfig = {
 }
 
 export type SiteConfigData = {
-  path: string
+  path?: string
   archive: ArchiveMetadata
   hostnames?: string[]
   redirects?: RedirectEntry[]
