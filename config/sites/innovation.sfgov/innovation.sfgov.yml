@@ -3,7 +3,7 @@ archive:
   base_url: https://innovation.sfgov.org
 
 hostnames:
-  - .innovation.sfgov.org
+  - www.innovation.sfgov.org
 
 redirects:
   - map:

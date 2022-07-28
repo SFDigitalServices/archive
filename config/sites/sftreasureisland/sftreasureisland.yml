@@ -3,7 +3,7 @@ archive:
   base_url: https://sftreasureisland.org
 
 hostnames:
-  - .sftreasureisland.org
+  - www.sftreasureisland.org
 
 redirects:
   - file: sftreasureisland.tsv
