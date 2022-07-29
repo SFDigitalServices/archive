@@ -4,6 +4,7 @@ const { URL } = require('node:url')
 const { dirname, join } = require('node:path')
 const { default: anymatch } = require('anymatch')
 const { unique, expandEnvVars, mergeMaps, readYAML } = require('./utils')
+const { ARCHIVE_BASE_URL, REDIRECT_PERMANENT } = require('./constants')
 const globby = require('globby')
 const vhost = require('vhost')
 
@@ -13,6 +14,7 @@ const vhost = require('vhost')
  * @typedef {import('..').RedirectEntry} RedirectEntry
  * @typedef {import('..').RedirectFileEntry} RedirectFileEntry
  * @typedef {import('..').RedirectMapEntry} RedirectMapEntry
+ * @typedef {import('..').ISite} ISite
  */
 
 const {
@@ -21,49 +23,54 @@ const {
 } = process.env
 
 const TIMESTAMP_LATEST = 3
-const REDIRECT_PERMANENT = 301
-const REDIRECT_TEMPORARY = 302
-const ARCHIVE_BASE_URL = 'https://wayback.archive-it.org'
 
-// subdomains that should be implicitly/automatically respected
-// for every unique hostname in each site
-const IMPLICIT_SUBDOMAINS = ['www']
-
-// this query string parameter tells us which type of URL to get...
-const ARCHIVE_TYPE_QUERY_PARAM = 'archive'
-// the "permanent" archive is the most recent snapshot in archive-it
-const ARCHIVE_TYPE_PERMANENT = 'perm'
-// and "none" tells us to skip the archive altogether and redirect to the original
-const ARCHIVE_TYPE_NONE = 'none'
-// you can also set this header to force an archive type
-const ARCHIVE_TYPE_HEADER = 'x-archive-type'
-
+/**
+ * @implements {ISite}
+ */
 class Site {
   /**
    * @param {string} path
    * @returns {Site}
    */
   static async load (path) {
-    const config = await loadSite(path)
-    return new Site(config)
+    // console.warn('loading site config:', path)
+    const config = await readYAML(path)
+    const site = new Site(config, path)
+    await site.loadRedirects()
+    return site
+  }
+
+  /**
+   * @param {string | string[]} globs
+   * @param {globby.GlobbyOptions} opts
+   * @returns {Promise<Site[]>}
+   */
+  static async loadAll (globs, opts) {
+    const { cwd = '.', ...rest } = opts || {}
+    const paths = await globby(globs, { cwd, ...rest })
+    return Promise.all(
+      paths.map(path => Site.load(join(cwd, path)))
+    )
   }
 
   /**
    * @param {SiteConfigData} data
    * @returns {Site}
    */
-  constructor (data) {
+  constructor (data, path) {
     this.config = data
+    this.path = path || data.path
     this.matchesHost = anymatch(this.hostnames)
     this.redirects = getInlineRedirects(this.config.redirects)
   }
 
   get baseUrl () {
-    // this will throw if either value is empty or invalid
-    return new URL(
-      this.config.base_url ||
-      this.config.archive.base_url
+    const base = appendSuffix(
+      this.config.base_url || this.config.archive?.base_url,
+      '/'
     )
+    // this will throw if either value is empty or invalid
+    return new URL(base)
   }
 
   get collectionId () {
@@ -74,9 +81,6 @@ class Site {
     return this.baseUrl.hostname
   }
 
-  /**
-   * @returns {string[]}
-   */
   get hostnames () {
     return getHostnames(this.hostname, ...(this.config.hostnames || []))
   }
@@ -88,65 +92,158 @@ class Site {
    * @returns {Promise<RedirectMap>}
    */
   async loadRedirects () {
-    const redirects = await loadRedirects(this.config.redirects, dirname(this.config.path))
-    for (const [from, to] of redirects.entries()) {
-      this.redirects.set(from, to)
+    if (this.config.redirects?.length) {
+      const redirects = await loadRedirects(this.config.redirects, dirname(this.path))
+      for (const [from, to] of redirects.entries()) {
+        this.redirects.set(from, to)
+      }
     }
     return this.redirects
   }
 
   /**
    *
-   * @param {string | URL} url
+   * @param {string | string[]} uriOrUris
    * @returns {string | undefined}
    */
-  resolve (...uris) {
-    let redirect = uris.find(uri => this.redirects.has(uri))
+  resolve (uriOrUris) {
+    const uris = Array.isArray(uriOrUris) ? uriOrUris : [uriOrUris]
+    let resolved = uris.find(uri => this.redirects.has(uri))
     // resolve internal redirects
-    while (this.redirects.has(redirect)) {
-      redirect = this.redirects.get(redirect)
+    while (this.redirects.has(resolved)) {
+      resolved = this.redirects.get(resolved)
     }
-    return redirect
+    return resolved
   }
 
   /**
    * @param {string | undefined} uri
    * @returns {string | undefined}
    */
-  getArchiveUrl (uri) {
+  getArchiveUrl (uri, timestamp = TIMESTAMP_LATEST) {
     const { baseUrl, collectionId } = this
     const collectionPath = collectionId ?? `org-${ARCHIVE_IT_ORG_ID}`
-    return `${ARCHIVE_BASE_URL}/${collectionPath}/${TIMESTAMP_LATEST}/${baseUrl}${uri || ''}`
+    const relativeUri = removeStringPrefix(uri, baseUrl.pathname)
+    const path = `/${collectionPath}/${timestamp}/${baseUrl}${relativeUri}`
+    return new URL(path, ARCHIVE_BASE_URL).toString()
   }
 
   /**
    * @returns {express.Router}
    */
   createRouter () {
-    const router = new express.Router()
+    const router = new express.Router({
+      caseSensitive: true,
+      mergeParams: true
+    })
+    const path = this.baseUrl.pathname || '/'
     const staticRouter = this.createStaticRouter()
-    if (staticRouter) router.use(staticRouter)
-    router.use(this.createRequestHandler())
+    if (staticRouter) {
+      router.use(path, staticRouter)
+    }
+    router.use(path, this.createRequestHandler())
     return router
   }
 
+  /*
+   * @param {{ baseUrl: string }} options
+   * @returns {express.RequestHandler}
+   createPassthroughProxy (options) {
+     const { baseUrl } = options
+     return createProxyMiddleware({
+       target: baseUrl,
+       changeOrigin: true,
+       logLevel: 'debug',
+       onProxyRes (proxyRes, req, res) {
+         if (proxyRes.headers['content-type']?.includes('text/html')) {
+           proxyRes.pipe(
+             this.createProxyTransformStream(proxyRes, options)
+             )
+            }
+      }
+    })
+  }
+  */
+
+  /*
+   * @param {{ passThroughHandler?: express.RequestHandler }} options
+   * @returns {express.RequestHandler}
+  createArchiveProxy (options) {
+     const { passThroughHandler } = options
+     return createProxyMiddleware({
+       baseUrl: this.getArchiveUrl('/'),
+       changeOrigin: true,
+       logLevel: 'debug',
+       onProxyReq (proxyReq, req, res) {
+
+      },
+      onProxyRes (proxyRes, req, res) {
+        if (proxyRes.statusCode === 404 && passThroughHandler) {
+          return passThroughHandler(req, res)
+        }
+      }
+    })
+  }
+  */
+
+  /*
+  createProxyTransformStream () {
+    const rewriteUrl = this.rewriteWaybackUrl.bind(this)
+    return hstream({
+      // rewrite wayback URLs
+      'a[href]': { href: rewriteUrl },
+      'form[target]': { taret: rewriteUrl },
+      'img[src]': { src: rewriteUrl },
+      'link[href]': { href: rewriteUrl },
+      'script[src]': { src: rewriteUrl },
+      // hide the wayback banner
+      'body > wb_div': {
+        hidden: 'hidden',
+        is: 'archive-banner'
+      },
+      // add our own script
+      body: { _appendHtml: '<script src="/js/snapshot.js" defer></script>' }
+    })
+  }
+  */
+
+  /*
+  rewriteWaybackUrl (url) {
+    const { hostname, pathname } = new URL(url, this.baseUrl)
+    if (hostname === 'wayback.archive-it.org' && pathname.startsWith('/web/')) {
+      const actualUrl = pathname.replace('/web', '')
+      const parsed = new URL(actualUrl)
+      return this.matchesHost(parsed.hostname)
+        ? url
+        : actualUrl.toString()
+    }
+    return url
+  }
+  */
+
   /**
+   * @param {object?} options
    * @returns {express.RequestHandler}
    */
-  createRequestHandler () {
+  createRequestHandler (options) {
     return (req, res, next) => {
       if (!this.matchesHost(req.hostname)) {
         return next('router')
       }
+      console.info('  ↪ %s %s %s', this.baseUrl.hostname, req.path, req.originalUrl)
+      const logPrefix = '    '
       const redirect = this.resolve([req.originalUrl, req.path])
       if (redirect) {
-        return res.redirect(redirect, REDIRECT_PERMANENT)
+        console.info('%s🌎 redirect:', logPrefix, redirect)
+        return res.redirect(REDIRECT_PERMANENT, redirect)
       } else {
         const archiveUrl = this.getArchiveUrl(req.originalUrl)
         if (archiveUrl) {
-          return res.redirect(archiveUrl, REDIRECT_PERMANENT)
+          console.info('%s📦 archive:', logPrefix, archiveUrl)
+          return res.redirect(REDIRECT_PERMANENT, archiveUrl)
         }
       }
+      console.info('%s🙈', logPrefix)
       return next('router')
     }
   }
@@ -160,155 +257,34 @@ class Site {
 
     const router = new express.Router()
     const serveStatic = express.static(staticConfig.path, staticConfig.options)
-    for (const host of this.hostnames) {
-      router.use(vhost(host, serveStatic))
-    }
+    router.use(
+      ...this.hostnames.map(host => vhost(host, serveStatic))
+    )
     return router
   }
 }
 
 module.exports = {
   Site,
-  loadSite,
-  loadSites,
-  createSiteRouter,
   loadRedirects,
   loadRedirectMap
 }
 
 /**
- *
- * @param {string} path
- * @returns {Promise<SiteConfigData>}
- */
-async function loadSite (path) {
-  // console.warn('loading site config:', path)
-  const config = await readYAML(path)
-  config.path = path
-  return config
-}
-
-/**
- * Load all site configs from a directory.
- *
- * @param {string | string[]} globs
- * @param {{ cwd?: string }} cwd
- * @returns {Promise<SiteConfigData[]>}
- */
-async function loadSites (globs, opts) {
-  const { cwd = '.', ...rest } = opts || {}
-  const paths = await globby(globs, { cwd, ...rest })
-  return Promise.all(
-    paths.map(path => loadSite(join(cwd, path)))
-  )
-}
-
-/**
- *
- * @param {SiteConfigData} config
- * @returns {Promise<Router>}
- */
-async function createSiteRouter (config) {
-  const {
-    archive: {
-      collection_id: collectionId,
-      base_url: baseUrl,
-      active: archiveActive = true
-    },
-    hostnames = [],
-    redirects = [],
-    static: staticConfig,
-    path
-  } = config
-
-  if (!baseUrl) {
-    throw new Error(`No archive.base_url defined in ${path}`)
-  } else if (!collectionId) {
-    console.warn(`No archive.collection_id in ${path}; `)
-  }
-
-  const baseHostname = new URL(baseUrl).hostname
-  const allHostnames = hostnames.length
-    ? getHostnames(...hostnames)
-    : getHostnames(baseHostname)
-  if (allHostnames.length === 0) {
-    console.warn('No hostnames found in %s; no router will be created', path)
-    return (req, res, next) => next('router')
-  } else {
-    for (const hostname of allHostnames) {
-      console.warn('+ host: %s (%s)', hostname, path)
-    }
-  }
-
-  const relativeDir = dirname(path)
-  const redirectMap = await loadRedirects(redirects, relativeDir)
-  const hostMatch = anymatch(allHostnames)
-  const router = express.Router({
-    caseSensitive: true,
-    mergeParams: true
-  })
-
-  if (staticConfig) {
-    const serveStatic = express.static(staticConfig.path, staticConfig.options)
-    router.use(...allHostnames.map(host => vhost(host, serveStatic)))
-  }
-
-  router.use((req, res, next) => {
-    if (!hostMatch(req.hostname)) {
-      return next('router')
-    }
-
-    const redirect = resolveRedirect([req.path, req.originalUrl], redirectMap)
-    const archiveType = req.query[ARCHIVE_TYPE_QUERY_PARAM] || req.get(ARCHIVE_TYPE_HEADER)
-
-    if (archiveType === ARCHIVE_TYPE_NONE || (!redirect && !archiveActive)) {
-      const passThroughUrl = new URL(`${baseUrl}${req.originalUrl}`)
-      passThroughUrl.searchParams.delete(ARCHIVE_TYPE_QUERY_PARAM)
-      return res.redirect(REDIRECT_TEMPORARY, String(passThroughUrl))
-    } else if (redirect && archiveType !== ARCHIVE_TYPE_PERMANENT) {
-      return res.redirect(REDIRECT_PERMANENT, redirect)
-    } else {
-      const archiveUrl = getArchiveUrl(req.originalUrl, { baseUrl, collectionId })
-      return res.redirect(REDIRECT_PERMANENT, archiveUrl)
-    }
-  })
-
-  return router
-}
-
-/**
- *
- * @param {string} uri
- * @param {{ baseUrl: string, collectionId: string | number }} options
- * @returns
- */
-function getArchiveUrl (uri, { baseUrl, collectionId }) {
-  const collectionPath = collectionId ?? `org-${ARCHIVE_IT_ORG_ID}`
-  return `${ARCHIVE_BASE_URL}/${collectionPath}/${TIMESTAMP_LATEST}/${baseUrl}${uri || ''}`
-}
-
-/**
- *
- * @param  {...string} urls
+ * @param  {...(string | string[])} urls
  * @returns {string[]}
  */
 function getHostnames (...urls) {
   return urls
     .flatMap(hostname => {
-      // a "^" at the beginning indicates an exact domain match only
-      // (no automatic subdomains or wildcards)
       if (hostname.startsWith('^')) {
         return hostname.slice(1)
-      } else
-      if (hostname.startsWith('.')) {
+      } else if (hostname.startsWith('.')) {
         return `*${hostname}`
       } else if (hostname.startsWith('www.')) {
         return [hostname, hostname.replace('www.', '')]
       }
-      return [
-        hostname,
-        ...IMPLICIT_SUBDOMAINS.map(sub => `${sub}.${hostname}`)
-      ]
+      return [hostname]
     })
     .filter(unique)
     .map(host => expandEnvVars(host))
@@ -321,7 +297,7 @@ function getHostnames (...urls) {
  * @returns {Promise<Map<string, string>>}
  */
 async function loadRedirects (sources, relativeToPath = '.') {
-  const map = getInlineRedirects(sources)
+  const map = new Map()
   const fileMaps = await Promise.all(
     sources
       .filter(source => source.file)
@@ -340,7 +316,7 @@ async function loadRedirects (sources, relativeToPath = '.') {
  * in the order they're defined.
  *
  * @param {RedirectMapEntry[]} sources
- * @returns {Promise<RedirectMap>}
+ * @returns {RedirectMap}
  */
 function getInlineRedirects (sources) {
   const map = new Map()
@@ -379,14 +355,14 @@ async function loadRedirectMap (path) {
 
 /**
  *
- * @param {string[]} uris
- * @param {Map<string, string>} redirectMap
- * @returns
+ * @param {string?} uri
+ * @param {string} prefix
+ * @returns {string}
  */
-function resolveRedirect (uris, redirectMap) {
-  let uri = uris.find(uri => redirectMap.has(uri))
-  while (uri && redirectMap.has(uri)) {
-    uri = redirectMap.get(uri)
-  }
-  return uri
+function removeStringPrefix (uri, prefix) {
+  return uri?.startsWith(prefix) ? uri.slice(prefix.length) : ''
+}
+
+function appendSuffix (str, suffix) {
+  return str && !str.endsWith(suffix) ? `${str}${suffix}` : str
 }
