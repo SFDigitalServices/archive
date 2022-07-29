@@ -1,7 +1,4 @@
-archive:
-  base_url: https://sf.gov
-  # setting this to false disables routing to the archives
-  active: false
+base_url: https://archive.sf.gov
 
 static:
   path: public
@@ -9,6 +6,6 @@ static:
     fallthrough: true
 
 hostnames:
-  - archive.sf.gov
+  - '*.archive.sf.gov'
   - 'sfgov-archive*.herokuapp.com'
-  - ^localhost
+  - localhost
