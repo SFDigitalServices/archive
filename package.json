@@ -9,7 +9,7 @@
     "start": "nodemon --config config/nodemon.develop.json server.js",
     "test": "run-s test:unit test:features",
     "test:features": "cucumber-js --config config/cucumber.js",
-    "test:watch": "watchy -d 1 -w '**/*.feature' -w '{src,}/**/*.js' -w 'sites/**' -w package.json -w .env -- npm test",
+    "test:watch": "watchy -d 1 -w 'features/**' -w '{src,}/**/*.js' -w 'config/**' -w package.json -w .env -- npm test",
     "test:unit": "jest"
   },
   "dependencies": {
@@ -33,6 +33,7 @@
     "expect": "^27.5.1",
     "jest": "^28.1.2",
     "node-fetch": "^2.6.7",
+    "supertest": "^6.2.4",
     "watchy": "^0.10.0",
     "yargs": "^17.5.1"
   }
