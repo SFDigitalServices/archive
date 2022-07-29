@@ -1,6 +1,8 @@
+import express from 'express'
+
 export type ArchiveMetadata = {
   collection_id: number | string
-  base_url: string
+  base_url?: string
   active?: boolean
 }
 
@@ -22,13 +24,21 @@ export type StaticConfig = {
 }
 
 export type SiteConfigData = {
-  path?: string
   archive: ArchiveMetadata
+  base_url?: string
   hostnames?: string[]
   redirects?: RedirectEntry[]
   static?: StaticConfig
 }
 
 export type AppOptions = {
-  sites: SiteConfigData[]
+  sites: ISite[]
+}
+
+export interface ISite {
+  path?: string
+  baseUrl: URL
+  collectionId?: number
+  hostnames?: string[]
+  createRouter: () => express.RequestHandler
 }
