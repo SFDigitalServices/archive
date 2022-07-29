@@ -1,18 +1,8 @@
-const { Site, loadSite, loadSites } = require('../src/sites')
-
-describe('loadSite()', () => {
-  it('works', async () => {
-    const site = await loadSite('__tests__/__fixtures__/basic-site.yml')
-    expect(site).toMatchSnapshot()
-  })
-})
-
-describe('loadSites()', () => {
-  it('works', async () => {
-    const sites = await loadSites('__tests__/__fixtures__/*.yml')
-    expect(sites).toMatchSnapshot()
-  })
-})
+/* eslint-disable promise/always-return */
+const { Site } = require('../src/sites')
+const express = require('express')
+const supertest = require('supertest')
+const { REDIRECT_PERMANENT, ARCHIVE_BASE_URL } = require('../src/constants')
 
 describe('Site', () => {
   describe('base URL', () => {
@@ -127,6 +117,114 @@ describe('Site', () => {
         ]
       })
       expect(site.resolve('/about-us')).toEqual('https://some-other-site.com/about')
+    })
+  })
+
+  describe('site router', () => {
+    describe('whole-domain sites', () => {
+      const site = new Site({
+        base_url: 'https://sftreasureisland.org',
+        redirects: [
+          {
+            map: {
+              '/': 'https://sf.gov/departments/city-administrator/treasure-island-development-authority'
+            }
+          }
+        ],
+        archive: {
+          collection_id: 18901
+        }
+      })
+
+      const router = site.createRouter()
+      const app = express().use(router)
+
+      it('routes only for the defined hostnames', async () => {
+        await supertest(app)
+          .get('/bac/')
+          .set('host', 'sfgov.org')
+          .expect(404)
+        await supertest(app)
+          .get('/')
+          .set('host', 'sftreasureisland.org')
+          .expect(REDIRECT_PERMANENT)
+          .expect('location', site.redirects.get('/'))
+      })
+
+      it('redirects to the wayback machine', async () => {
+        await supertest(app)
+          .get('/derp')
+          .set('host', 'sftreasureisland.org')
+          .expect(REDIRECT_PERMANENT)
+          .expect('location', `${ARCHIVE_BASE_URL}/${site.collectionId}/3/https://${site.baseUrl.hostname}/derp`)
+      })
+    })
+
+    describe('sites on a path of sfgov.org', () => {
+      const siteA = new Site({
+        base_url: 'https://sfgov.org/a/',
+        archive: {
+          collection_id: 123
+        },
+        redirects: [
+          { map: { '/': 'https://sf.gov/site-a/' } }
+        ]
+      })
+      const siteB = new Site({
+        base_url: 'https://sfgov.org/b/',
+        archive: {
+          collection_id: 456
+        },
+        redirects: [
+          { map: { '/': 'https://sf.gov/site-b/' } }
+        ]
+      })
+      const app = express()
+        .use(siteA.createRouter())
+        .use(siteB.createRouter())
+
+      it('routes to the first site', async () => {
+        await supertest(app)
+          .get('/a/')
+          .set('host', 'sfgov.org')
+          .then(res => {
+            expect(res.statusCode).toBe(REDIRECT_PERMANENT)
+            expect(res.get('location')).toBe(siteA.redirects.get('/'))
+          })
+        await supertest(app)
+          .get('/a/derp')
+          .set('host', 'sfgov.org')
+          .then(res => {
+            expect(res.statusCode).toBe(REDIRECT_PERMANENT)
+            expect(res.get('location')).toBe(`${ARCHIVE_BASE_URL}/${siteA.collectionId}/3/${siteA.baseUrl}derp`)
+          })
+      })
+
+      it('routes to the second site', async () => {
+        await supertest(app)
+          .get('/b/')
+          .set('host', 'sfgov.org')
+          .then(res => {
+            expect(res.statusCode).toBe(REDIRECT_PERMANENT)
+            expect(res.get('location')).toBe(siteB.redirects.get('/'))
+          })
+        await supertest(app)
+          .get('/b/derp')
+          .set('host', 'sfgov.org')
+          .then(res => {
+            expect(res.statusCode).toBe(REDIRECT_PERMANENT)
+            expect(res.get('location')).toBe(`${ARCHIVE_BASE_URL}/${siteB.collectionId}/3/${siteB.baseUrl}derp`)
+          })
+      })
+
+      it('404s on other URLs', async () => {
+        await supertest(app)
+          .get('/')
+          .expect(404)
+        await supertest(app)
+          .get('/c/')
+          .expect(404)
+      })
     })
   })
 })

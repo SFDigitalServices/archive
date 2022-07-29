@@ -3,14 +3,18 @@ const fetch = require('node-fetch')
 const expect = require('expect')
 const { URL } = require('node:url')
 const { expandEnvVars } = require('../src/utils')
+const { REDIRECT_PERMANENT, REDIRECT_TEMPORARY } = require('../src/constants')
 
 require('dotenv').config()
 
-const REDIRECT_PERMANENT = 301
-const REDIRECT_TEMPORARY = 302
 const anyRedirectStatus = [REDIRECT_PERMANENT, REDIRECT_TEMPORARY]
 
-const { TEST_BASE_URL, PORT } = process.env
+const {
+  TEST_BASE_URL,
+  PORT,
+  NODE_ENV,
+  DEBUG
+} = process.env
 
 defineParameterType({
   name: 'url',
@@ -48,6 +52,11 @@ When('I visit {url}', async function (url) {
 
 Then('I should be redirected to {url}', function (url) {
   expect(this.response).toRedirectTo(expandEnvVars(url))
+})
+
+Then('I follow the redirect', async function () {
+  expect(this.response?.headers.get('location')).toBeTruthy()
+  await this.followRedirect()
 })
 
 Then('I should be redirected permanently to {url}', function (url) {
@@ -98,6 +107,8 @@ setWorldConstructor(class RequestWorld {
   getFullUrl (str, defaultProtocol = 'http') {
     if (str.includes('://')) {
       return new URL(str)
+    } else if (str.startsWith('//')) {
+      return new URL(`${defaultProtocol}:${str}`)
     } else if (str.startsWith('/')) {
       return new URL(str, this.baseUrl)
     } else {
@@ -107,13 +118,20 @@ setWorldConstructor(class RequestWorld {
 
   async load (url, options = {}) {
     const fullUrl = this.getFullUrl(url)
-    console.warn("curl '%s' %s", fullUrl, Object.entries(this.headers).map(([h, v]) => `-H '${h}: ${v}'`).join(' '))
-    const res = await fetch(fullUrl, {
+    debug("curl '%s' %s", fullUrl, Object.entries(this.headers).map(([h, v]) => `-H '${h}: ${v}'`).join(' '))
+    this.response = await fetch(fullUrl, {
       headers: this.headers,
       redirect: 'manual',
       ...options
     })
-    this.response = res
+  }
+
+  async followRedirect (options = {}) {
+    const url = this.response.headers.get('location')
+    this.response = await fetch(url, {
+      headers: omit(this.headers, ['host']),
+      ...options
+    })
   }
 
   get content () {
@@ -135,19 +153,40 @@ function getEnvTestUrl () {
 }
 
 expect.extend({
-  toRedirectTo (req, urlOrPattern, expectedStatus) {
+  /**
+   *
+   * @param {fetch.Response} res
+   * @param {string} url
+   * @param {number} expectedStatus
+   * @returns {{ pass: boolean, message: () => string }}
+   */
+  toRedirectTo (res, url, expectedStatus) {
+    const { status, headers } = res
     const matchesStatus = expectedStatus
-      ? req.status === expectedStatus
-      : anyRedirectStatus.includes(req.status)
-    const locationHeader = req.headers.get('Location')
-    const locationMatch = locationHeader === urlOrPattern
+      ? status === expectedStatus
+      : anyRedirectStatus.includes(status)
+    const locationHeader = headers.get('Location')
+    const locationMatch = locationHeader === url
     return {
       pass: matchesStatus && locationMatch,
       message () {
         return matchesStatus
-          ? `Expected Location header to match:\n\t${urlOrPattern}\nbut got:\n\t${locationHeader}`
-          : `Expected HTTP status ${expectedStatus || anyRedirectStatus.join(' or ')}, but got ${req.status}`
+          ? `Expected Location header to match:\n\t${url}\nbut got:\n\t${locationHeader}`
+          : `Expected HTTP status ${expectedStatus || anyRedirectStatus.join(' or ')}, but got ${status}`
       }
     }
   }
 })
+
+function debug (...args) {
+  if (NODE_ENV === 'development' || DEBUG === '1') {
+    console.warn(...args)
+  }
+}
+
+function omit (obj, keys) {
+  return Object.fromEntries(
+    Object.entries(obj)
+      .filter(([name]) => !keys.includes(name.toLowerCase()))
+  )
+}
