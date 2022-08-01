@@ -6,7 +6,6 @@ const { default: anymatch } = require('anymatch')
 const { unique, expandEnvVars, mergeMaps, readYAML } = require('./utils')
 const { ARCHIVE_BASE_URL, REDIRECT_PERMANENT } = require('./constants')
 const globby = require('globby')
-const vhost = require('vhost')
 
 /**
  * @typedef {import('..').SiteConfigData} SiteConfigData
@@ -60,6 +59,7 @@ class Site {
   constructor (data, path) {
     this.config = data
     this.path = path || data.path
+    this.hostnames = getHostnames(this.hostname, ...(this.config.hostnames || []))
     this.matchesHost = anymatch(this.hostnames)
     this.redirects = getInlineRedirects(this.config.redirects)
   }
@@ -79,10 +79,6 @@ class Site {
 
   get hostname () {
     return this.baseUrl.hostname
-  }
-
-  get hostnames () {
-    return getHostnames(this.hostname, ...(this.config.hostnames || []))
   }
 
   /**
@@ -137,12 +133,19 @@ class Site {
       mergeParams: true
     })
     const path = this.baseUrl.pathname || '/'
+    const handlers = []
     const staticRouter = this.createStaticRouter()
     if (staticRouter) {
-      router.use(path, staticRouter)
+      handlers.push(staticRouter)
     }
-    router.use(path, this.createRequestHandler())
-    return router
+    handlers.push(this.createRequestHandler())
+    return router.use(path, (req, res, next) => {
+      if (this.matchesHost(req.hostname)) {
+        next()
+      } else {
+        next('router')
+      }
+    }, ...handlers)
   }
 
   /*
@@ -227,9 +230,6 @@ class Site {
    */
   createRequestHandler (options) {
     return (req, res, next) => {
-      if (!this.matchesHost(req.hostname)) {
-        return next('router')
-      }
       console.info('  ↪ %s %s %s', this.baseUrl.hostname, req.path, req.originalUrl)
       const logPrefix = '    '
       const redirect = this.resolve([req.originalUrl, req.path])
@@ -254,13 +254,7 @@ class Site {
   createStaticRouter () {
     const { static: staticConfig } = this.config
     if (!staticConfig) return
-
-    const router = new express.Router()
-    const serveStatic = express.static(staticConfig.path, staticConfig.options)
-    router.use(
-      ...this.hostnames.map(host => vhost(host, serveStatic))
-    )
-    return router
+    return express.static(staticConfig.path, staticConfig.options)
   }
 }
 
