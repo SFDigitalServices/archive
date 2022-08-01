@@ -17,7 +17,7 @@ module.exports = {
  * @param {Record<string, string>} vars
  * @returns {string}
  */
-function expandEnvVars (str, vars = {}) {
+function expandEnvVars (str, vars = process.env) {
   return str
     .replace(/\${(\w+)}/g, (_, key) => vars[key] || '')
     .replace(/\$(\w+)/g, (_, key) => vars[key] || '')
