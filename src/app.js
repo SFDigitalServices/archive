@@ -1,5 +1,4 @@
 const express = require('express')
-const { default: httpFilter } = require('http-method-filter')
 
 /**
  * @typedef {import('..').AppOptions} AppOptions
@@ -13,6 +12,7 @@ const { default: httpFilter } = require('http-method-filter')
 module.exports = async function createApp (options) {
   const {
     sites = [],
+    // eslint-disable-next-line no-unused-vars
     allowedMethods = ['GET', 'HEAD', 'OPTIONS']
   } = options || {}
 
@@ -23,15 +23,11 @@ module.exports = async function createApp (options) {
     // see: <https://expressjs.com/en/guide/behind-proxies.html>
     .set('trust proxy', 1)
 
-  app.use(
-    httpFilter(allowedMethods),
-    logHandler
-  )
+  app.use(logHandler)
 
   for (const site of sites) {
     console.info('+ site %s: %s %s', site.name, site.baseUrl, site.hostnames?.join(', '))
-    const router = site.createRouter()
-    app.use(router)
+    app.use(site.createRouter())
   }
 
   return app

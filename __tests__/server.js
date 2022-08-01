@@ -12,18 +12,20 @@ const notAllowedMethods = [
 ]
 
 describe('server logic', () => {
-  it('allows read-only HTTP verbs', async () => {
-    const server = await createServer({ sites: [] })
-    for (const method of allowedMethods) {
-      expect(testRequest(server, '/', method)).toResolveWithStatus(404)
-    }
-  })
+  describe.skip('allowed methods', () => {
+    it('allows read-only HTTP verbs', async () => {
+      const server = await createServer({ sites: [] })
+      for (const method of allowedMethods) {
+        expect(testRequest(server, '/', method)).toResolveWithStatus(404)
+      }
+    })
 
-  it('does not allow other HTTP verbs', async () => {
-    const server = await createServer({ sites: [] })
-    for (const method of notAllowedMethods) {
-      expect(testRequest(server, '/', method)).toResolveWithStatus(405)
-    }
+    it('does not allow other HTTP verbs', async () => {
+      const server = await createServer({ sites: [] })
+      for (const method of notAllowedMethods) {
+        expect(testRequest(server, '/', method)).toResolveWithStatus(405)
+      }
+    })
   })
 })
 
