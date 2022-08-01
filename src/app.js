@@ -1,4 +1,5 @@
 const express = require('express')
+const { default: httpFilter } = require('http-method-filter')
 
 /**
  * @typedef {import('..').AppOptions} AppOptions
@@ -10,7 +11,10 @@ const express = require('express')
  * @returns {Promise<express.Application>}
  */
 module.exports = async function createApp (options) {
-  const { sites = [] } = options || {}
+  const {
+    sites = [],
+    allowedMethods = ['GET', 'HEAD', 'OPTIONS']
+  } = options || {}
 
   const app = express()
     // disable the X-Powered-By: Express header
@@ -19,15 +23,23 @@ module.exports = async function createApp (options) {
     // see: <https://expressjs.com/en/guide/behind-proxies.html>
     .set('trust proxy', 1)
 
-  app.use((req, res, next) => {
-    console.info(`${req.method} ${req.hostname} ${req.originalUrl}`)
-    next()
-  })
+  app.use(
+    httpFilter(allowedMethods),
+    logHandler
+  )
+
   for (const site of sites) {
-    console.info('+ site <%s>: %s', site.baseUrl, site.hostnames?.join(', '))
+    console.info('+ site %s: %s %s', site.name, site.baseUrl, site.hostnames?.join(', '))
     const router = site.createRouter()
     app.use(router)
   }
 
   return app
+
+  function logHandler (req, res, next) {
+    if (process.env.NODE_ENV !== 'test') {
+      console.info(`${req.method} ${req.hostname} ${req.originalUrl}`)
+    }
+    next()
+  }
 }
