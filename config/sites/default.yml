@@ -8,6 +8,6 @@ static:
     fallthrough: true
 
 hostnames:
-  - '*.archive.sf.gov'
-  - 'sfgov-archive*.herokuapp.com'
   - localhost
+  - '*.archive.sf.gov'
+  - '${HEROKU_APP_NAME}.herokuapp.com'

@@ -6,6 +6,7 @@ archive:
 
 hostnames:
   - www.sftreasureisland.org
+  - '${HEROKU_APP_NAME}.sftreasureisland.org'
 
 redirects:
   - file: sftreasureisland.tsv
