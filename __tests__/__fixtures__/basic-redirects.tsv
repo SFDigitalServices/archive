@@ -1,0 +1,5 @@
+# this is a comment
+/home https://example.com/
+/about-us /about
+/about https://some-other-site.com/about
+/trailing-comment https://example.com/trailing-comment # this is a comment

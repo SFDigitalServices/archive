@@ -1,5 +1,5 @@
 const createApp = require('./src/app')
-const { loadSites } = require('./src/sites')
+const { Site } = require('./src/sites')
 
 const { NODE_ENV } = process.env
 if (NODE_ENV !== 'production') {
@@ -10,16 +10,9 @@ const { PORT } = process.env
 
 if (!PORT) throw new Error('$PORT is unset')
 
-loadSites('config/sites/**/*.yml')
+Site.loadAll('config/sites/**/*.yml', { cwd: __dirname })
   .then(sites => createApp({ sites }))
   .then(app => {
-    // disable the X-Powered-By: Express header
-    app.disable('x-powered-by')
-
-    // only trust one level of proxy forwarding
-    // see: <https://expressjs.com/en/guide/behind-proxies.html>
-    app.set('trust proxy', 1)
-
     const server = app.listen(PORT, () => {
       const { address, port } = server.address()
       const host = address === '::' ? 'localhost' : address
@@ -28,7 +21,7 @@ loadSites('config/sites/**/*.yml')
     return server
   })
   .catch(error => {
-    console.error(error.message)
+    console.error(error)
     // eslint-disable-next-line no-process-exit
     process.exit(1)
   })
