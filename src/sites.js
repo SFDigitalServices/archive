@@ -64,6 +64,12 @@ class Site {
     this.redirects = getInlineRedirects(this.config.redirects)
   }
 
+  get name () {
+    return this.config.name
+      ? `"${this.config.name}"`
+      : `<${this.hostname}>`
+  }
+
   get baseUrl () {
     const base = appendSuffix(
       this.config.base_url || this.config.archive?.base_url,
@@ -230,7 +236,7 @@ class Site {
    */
   createRequestHandler (options) {
     return (req, res, next) => {
-      console.info('  ↪ %s %s %s', this.baseUrl.hostname, req.path, req.originalUrl)
+      console.info('  ↪ %s %s %s', this.name, req.path, req.originalUrl)
       const logPrefix = '    '
       const redirect = this.resolve([req.originalUrl, req.path])
       if (redirect) {
