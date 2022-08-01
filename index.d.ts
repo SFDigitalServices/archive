@@ -27,15 +27,18 @@ export type SiteConfigData = {
   archive: ArchiveMetadata
   base_url?: string
   hostnames?: string[]
+  name?: string
   redirects?: RedirectEntry[]
   static?: StaticConfig
 }
 
 export type AppOptions = {
   sites: ISite[]
+  allowedMethods: string[]
 }
 
 export interface ISite {
+  name: string
   path?: string
   baseUrl: URL
   collectionId?: number
