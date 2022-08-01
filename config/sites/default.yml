@@ -1,3 +1,5 @@
+name: static assets
+
 base_url: https://archive.sf.gov
 
 static:
