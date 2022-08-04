@@ -1,5 +1,6 @@
 const createApp = require('./src/app')
 const { Site } = require('./src/sites')
+const log = require('./src/log').scope('server')
 
 const { NODE_ENV } = process.env
 if (NODE_ENV !== 'production') {
@@ -16,7 +17,7 @@ Site.loadAll('config/sites/**/*.yml', { cwd: __dirname })
     const server = app.listen(PORT, () => {
       const { address, port } = server.address()
       const host = address === '::' ? 'localhost' : address
-      console.log('listening on http://%s:%d', host, port)
+      log.info('listening on http://%s:%d', host, port)
     })
     return server
   })
