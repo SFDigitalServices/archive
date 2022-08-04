@@ -43,5 +43,6 @@ export interface ISite {
   baseUrl: URL
   collectionId?: number
   hostnames?: string[]
+  config: SiteConfigData
   createRouter: () => express.RequestHandler
 }
