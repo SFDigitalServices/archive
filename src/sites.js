@@ -6,6 +6,7 @@ const { default: anymatch } = require('anymatch')
 const { unique, expandEnvVars, mergeMaps, readYAML } = require('./utils')
 const { ARCHIVE_BASE_URL, REDIRECT_PERMANENT } = require('./constants')
 const globby = require('globby')
+const log = require('./log').scope('site')
 
 /**
  * @typedef {import('..').SiteConfigData} SiteConfigData
@@ -32,7 +33,7 @@ class Site {
    * @returns {Site}
    */
   static async load (path) {
-    // console.warn('loading site config:', path)
+    log.debug('loading site config:', path)
     const config = await readYAML(path)
     const site = new Site(config, path)
     await site.loadRedirects()
@@ -46,6 +47,7 @@ class Site {
    */
   static async loadAll (globs, opts) {
     const { cwd = '.', ...rest } = opts || {}
+    log.debug('loading site configs from:', globs, { cwd })
     const paths = await globby(globs, { cwd, ...rest })
     return Promise.all(
       paths.map(path => Site.load(join(cwd, path)))
@@ -62,6 +64,7 @@ class Site {
     this.hostnames = getHostnames(this.hostname, ...(this.config.hostnames || []))
     this.matchesHost = anymatch(this.hostnames)
     this.redirects = getInlineRedirects(this.config.redirects)
+    this.log = log.scope(this.name)
   }
 
   get name () {
@@ -138,7 +141,7 @@ class Site {
       caseSensitive: true,
       mergeParams: true
     })
-    const path = this.baseUrl.pathname || '/'
+    const path = this.baseUrl.pathname
     const handlers = []
     const staticRouter = this.createStaticRouter()
     if (staticRouter) {
@@ -236,21 +239,18 @@ class Site {
    */
   createRequestHandler (options) {
     return (req, res, next) => {
-      console.info('  ↪ %s %s %s', this.name, req.path, req.originalUrl)
-      const logPrefix = '    '
+      this.log.info(req.path, req.originalUrl)
       const redirect = this.resolve([req.originalUrl, req.path])
       if (redirect) {
-        console.info('%s🌎 redirect:', logPrefix, redirect)
+        this.log.success('redirect:', redirect)
         return res.redirect(REDIRECT_PERMANENT, redirect)
       } else {
         const archiveUrl = this.getArchiveUrl(req.originalUrl)
-        if (archiveUrl) {
-          console.info('%s📦 archive:', logPrefix, archiveUrl)
-          return res.redirect(REDIRECT_PERMANENT, archiveUrl)
-        }
+        this.log.success('archive:', archiveUrl)
+        return res.redirect(REDIRECT_PERMANENT, archiveUrl)
       }
-      console.info('%s🙈', logPrefix)
-      return next('router')
+      // this.log.warn('miss')
+      // return next('router')
     }
   }
 
@@ -277,9 +277,7 @@ module.exports = {
 function getHostnames (...urls) {
   return urls
     .flatMap(hostname => {
-      if (hostname.startsWith('^')) {
-        return hostname.slice(1)
-      } else if (hostname.startsWith('.')) {
+      if (hostname.startsWith('.')) {
         return `*${hostname}`
       } else if (hostname.startsWith('www.')) {
         return [hostname, hostname.replace('www.', '')]
@@ -298,6 +296,9 @@ function getHostnames (...urls) {
  */
 async function loadRedirects (sources, relativeToPath = '.') {
   const map = new Map()
+  if (!Array.isArray(sources)) {
+    throw new Error(`Expected array of sources, but got ${typeof sources}`)
+  }
   const fileMaps = await Promise.all(
     sources
       .filter(source => source.file)
