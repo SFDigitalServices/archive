@@ -1,6 +1,6 @@
 const express = require('express')
-const createApp = require('../src/app')
 const supertest = require('supertest')
+const createApp = require('../src/app')
 
 const allowedMethods = ['GET', 'HEAD', 'OPTIONS']
 const notAllowedMethods = [
@@ -10,6 +10,20 @@ const notAllowedMethods = [
   'PUT',
   'TRACE'
 ]
+
+describe('createApp()', () => {
+  it('defaults to no options', async () => {
+    await expect(createApp()).resolves.toBeInstanceOf(Function)
+    await expect(createApp({})).resolves.toBeInstanceOf(Function)
+    await expect(createApp({ sites: [] })).resolves.toBeInstanceOf(Function)
+  })
+
+  it('does not throw if a site is misconfigured', async () => {
+    await expect(createApp({ sites: [null] })).resolves.toBeInstanceOf(Function)
+    await expect(createApp({ sites: ['not a site'] })).resolves.toBeInstanceOf(Function)
+    await expect(createApp({ sites: [{ also: 'not a site' }] })).resolves.toBeInstanceOf(Function)
+  })
+})
 
 describe('server logic', () => {
   describe.skip('allowed methods', () => {
