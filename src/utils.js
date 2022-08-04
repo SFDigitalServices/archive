@@ -18,9 +18,12 @@ module.exports = {
  * @returns {string}
  */
 function expandEnvVars (str, vars = process.env) {
+  if (typeof str !== 'string') {
+    throw new Error(`Expected string to expand, but got ${typeof str}`)
+  }
   return str
-    .replace(/\${(\w+)}/g, (_, key) => vars[key] || '')
-    .replace(/\$(\w+)/g, (_, key) => vars[key] || '')
+    .replace(/\${(\w+)}/g, (_, key) => vars?.[key] || '')
+    .replace(/\$(\w+)/g, (_, key) => vars?.[key] || '')
 }
 
 function unique (value, index, list) {
@@ -46,7 +49,6 @@ async function readYAML (path) {
  */
 function mergeMaps (map, ...rest) {
   for (const other of rest.flat()) {
-    if (!other) continue
     for (const [k, v] of other.entries()) {
       map.set(k, v)
     }
