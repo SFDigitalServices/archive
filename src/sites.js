@@ -24,6 +24,12 @@ const {
 
 const TIMESTAMP_LATEST = 3
 
+/** @type {import('@types/serve-static').ServeStaticOptions} */
+const defaultStaticServeOptions = {
+  fallthrough: true,
+  redirect: true
+}
+
 /**
  * @implements {ISite}
  */
@@ -260,7 +266,10 @@ class Site {
   createStaticRouter () {
     const { static: staticConfig } = this.config
     if (!staticConfig) return
-    return express.static(staticConfig.path, staticConfig.options)
+    return express.static(staticConfig.path, Object.assign(
+      { ...defaultStaticServeOptions },
+      staticConfig.options
+    ))
   }
 }
 

@@ -313,7 +313,7 @@ describe('Site', () => {
         })
       })
 
-      describe('static routing from createSiteRouter()', () => {
+      describe('static routing from createRouter()', () => {
         it('mounts the static router', async () => {
           const site = new Site({
             base_url: EXAMPLE_BASE_URL,
@@ -323,9 +323,12 @@ describe('Site', () => {
           })
           const router = site.createRouter()
           const app = express().use(router)
+          // FIXME: not sure why this isn't working :(
           await supertest(app)
             .get('/robots.txt')
+            .set('host', 'example.com')
             .expect(200)
+            .expect(readFileSync('__tests__/__fixtures__/static-files/robots.txt', 'utf8'))
         })
       })
     })
