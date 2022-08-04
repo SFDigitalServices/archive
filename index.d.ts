@@ -1,4 +1,5 @@
 import express from 'express'
+import type { ServeStaticOptions } from '@types/serve-static'
 
 export type ArchiveMetadata = {
   collection_id: number | string
@@ -20,7 +21,7 @@ export type RedirectEntry = RedirectMapEntry | RedirectFileEntry
 
 export type StaticConfig = {
   path: string
-  options?: object
+  options?: ServeStaticOptions
 }
 
 export type SiteConfigData = {
