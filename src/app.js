@@ -1,4 +1,5 @@
 const express = require('express')
+const morgan = require('morgan')
 
 /**
  * @typedef {import('..').AppOptions} AppOptions
@@ -10,10 +11,10 @@ const express = require('express')
  * @returns {Promise<express.Application>}
  */
 module.exports = async function createApp (options) {
+  const log = require('./log').scope('app')
+
   const {
-    sites = [],
-    // eslint-disable-next-line no-unused-vars
-    allowedMethods = ['GET', 'HEAD', 'OPTIONS']
+    sites = []
   } = options || {}
 
   const app = express()
@@ -22,20 +23,16 @@ module.exports = async function createApp (options) {
     // only trust one level of proxy forwarding
     // see: <https://expressjs.com/en/guide/behind-proxies.html>
     .set('trust proxy', 1)
-
-  app.use(logHandler)
+    .use(morgan('combined'))
 
   for (const site of sites) {
-    console.info('+ site %s: %s %s', site.name, site.baseUrl, site.hostnames?.join(', '))
-    app.use(site.createRouter())
+    try {
+      log.info('site %s: %s %s', site.name, site.baseUrl, site.hostnames?.join(', '))
+      app.use(site.createRouter())
+    } catch (error) {
+      log.error('site configuration error:', site?.config, error)
+    }
   }
 
   return app
-
-  function logHandler (req, res, next) {
-    if (process.env.NODE_ENV !== 'test') {
-      console.info(`${req.method} ${req.hostname} ${req.originalUrl}`)
-    }
-    next()
-  }
 }
