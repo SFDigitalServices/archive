@@ -12,7 +12,8 @@
     "test": "run-s test:unit test:features",
     "test:features": "cucumber-js --config config/cucumber.js",
     "test:watch": "watchy -d 1 -w 'features/**' -w '{src,}/**/*.js' -w 'config/**' -w package.json -w .env -- npm test",
-    "test:unit": "jest"
+    "test:unit": "jest",
+    "validate": "ajv validate -s config/schemas/site.json -d 'config/sites/**/*.yml'"
   },
   "dependencies": {
     "anymatch": "^3.1.2",

@@ -13,6 +13,8 @@ jobs:
         with:
           node-version: 16
       - run: npm install
+      - name: validate configurations
+        run: npm run validate
       - name: lint
         run: npm run lint
       - name: unit tests
