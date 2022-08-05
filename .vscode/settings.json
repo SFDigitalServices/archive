@@ -9,5 +9,8 @@
     "editor.defaultFormatter": "vscode.typescript-language-features",
     "editor.formatOnSave": true,
     "editor.formatOnSaveMode": "file"
+  },
+  "yaml.schemas": {
+    "config/schemas/site.json": "config/sites/**/*.yml"
   }
 }
