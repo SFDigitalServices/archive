@@ -1,18 +1,19 @@
 # Use express
 
-* Status: **proposed**
+* Status: **approved**
 * Deciders: [Shawn Allen](https://github.com/shawnbot)
 * Date: 2022-07-07
 
 ## Context and Problem Statement
 
-In [the previous ADR](./002-server.md), we decided to use [httpd][] (sometimes referred incorrectly as "Apache") as our web server.
+In [the previous ADR](./002-server.md), we decided to use [httpd][] (sometimes referred to as "Apache") as our web server.
 
 After a couple of months of battling Docker and VirtualHost directives, we are reconsidering this decision. The criteria for the previous ADR still stands:
 
 * Match requests on one or more (wildcard) domains, e.g. `sftreasureisland.org` and `www.sftreasureisland.org`
-* Manage redirects for specific paths (e.g. `/` or `/meetings`) to `sf.gov`
-* Redirect URLs without managed redirects to archived pages
+* Match requests by path on shared domains, namely `sfgov.org`
+* Provide redirects for archived sites to their new homes (typically on `sf.gov`)
+* Route URLs without explicit redirects to archived snapshots
 * Serve static assets for the `archive.sf.gov` front end
 * Run redirect rule tests as part of our CI workflow
 * Scale in response to heavy loads
@@ -41,15 +42,18 @@ We ran into a number of issues developing and deploying httpd to Heroku. The sag
 
 ## Decision outcome
 
-TBD
+We will rebuild the server on [Express](#express).
 
 ### Positive consequences <!-- optional -->
 
-TBD
+* Simpler to deploy
+* Dramatically simpler development environment (no Docker)
+* Custom configuration features
+* More flexibility in almost all respects
 
 ### Negative consequences <!-- optional -->
 
-TBD
+* More custom code to maintain
 
 ## Pros and cons of each option
 
@@ -155,6 +159,6 @@ export function archiveRedirect ({ redirectMap, collectionId }) {
 [mod_rewrite]: https://httpd.apache.org/docs/2.2/mod/mod_rewrite.html
 [reverse proxy]: https://en.wikipedia.org/wiki/Reverse_proxy
 [vhost]: https://npmjs.com/package/vhost
-[vhost]: https://npmjs.com/package/helmet
+[helmet]: https://npmjs.com/package/helmet
 [nodemon]: https://nodemon.io/
 [pm2]: https://pm2.keymetrics.io/
