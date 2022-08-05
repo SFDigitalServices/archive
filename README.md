@@ -2,6 +2,8 @@
 
 This repo contains code and documentation for the City & County of San Francisco's web archiving efforts.
 
+🧑‍💻 See the [development docs](docs/DEVELOP.md) if you're looking to run the server or understand how it works.
+
 ## Goals
 
 - Support the migration of City sites to [sf.gov]
