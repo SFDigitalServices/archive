@@ -323,7 +323,6 @@ describe('Site', () => {
           })
           const router = site.createRouter()
           const app = express().use(router)
-          // FIXME: not sure why this isn't working :(
           await supertest(app)
             .get('/robots.txt')
             .set('host', 'example.com')
