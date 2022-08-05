@@ -1,8 +1,8 @@
 name: Office of Civic Innovation (MOCI)
+base_url: https://innovation.sfgov.org
 
 archive:
   collection_id: 19260
-  base_url: https://innovation.sfgov.org
 
 hostnames:
   - www.innovation.sfgov.org
