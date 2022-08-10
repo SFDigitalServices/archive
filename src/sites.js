@@ -154,8 +154,9 @@ class Site {
       handlers.push(staticRouter)
     }
     handlers.push(this.createRequestHandler())
-    return router.use(path, (req, res, next) => {
-      if (this.matchesHost(req.hostname)) {
+    return router.use(path, /** @type {express.RequestHandler} */ (req, res, next) => {
+      const hostname = res.locals.hostname || req.hostname
+      if (this.matchesHost(hostname)) {
         next()
       } else {
         next('router')
@@ -245,13 +246,15 @@ class Site {
    */
   createRequestHandler (options) {
     return (req, res, next) => {
-      this.log.info(req.path, req.originalUrl)
-      const redirect = this.resolve([req.originalUrl, req.path])
+      const path = res.locals.path || req.path
+      const originalUrl = res.locals.originalUrl || req.originalUrl
+      this.log.info(path, originalUrl)
+      const redirect = this.resolve([originalUrl, path])
       if (redirect) {
         this.log.success('redirect:', redirect)
         return res.redirect(REDIRECT_PERMANENT, redirect)
       } else {
-        const archiveUrl = this.getArchiveUrl(req.originalUrl)
+        const archiveUrl = this.getArchiveUrl(originalUrl)
         this.log.success('archive:', archiveUrl)
         return res.redirect(REDIRECT_PERMANENT, archiveUrl)
       }
