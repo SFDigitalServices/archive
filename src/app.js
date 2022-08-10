@@ -47,7 +47,7 @@ module.exports = async function createApp (options) {
  * routers to determine the _intended_ `hostname`, `path`, and originalUrl (path +
  * query string)
  *
- * @param {{ prefix: string, log: import('signales').SignaleType }} options
+ * @param {{ prefix: string, log: import('signales').SignaleEntrypoint }} options
  * @returns {express.RequestHandler}
  */
 function urlAliasHandler ({ prefix, log }) {
