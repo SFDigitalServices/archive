@@ -24,6 +24,10 @@ module.exports = async function createApp (options) {
     // see: <https://expressjs.com/en/guide/behind-proxies.html>
     .set('trust proxy', 1)
     .use(morgan('combined'))
+    .use('/_/', urlAliasHandler({
+      prefix: '/_/',
+      log: log.scope('alias')
+    }))
 
   for (const site of sites) {
     try {
@@ -35,4 +39,48 @@ module.exports = async function createApp (options) {
   }
 
   return app
+}
+
+/**
+ * The URL alias handler sets res.locals with information about the URL
+ * following the provided path prefix. Routers can then use the locals
+ * routers to determine the _intended_ `hostname`, `path`, and originalUrl (path +
+ * query string)
+ *
+ * @param {{ prefix: string, log: import('signales').SignaleType }} options
+ * @returns {express.RequestHandler}
+ */
+function urlAliasHandler ({ prefix, log }) {
+  return (req, res, next) => {
+    const uri = req.path.replace(prefix, '')
+    log.info(uri)
+    const url = getFullUrl(uri)
+    if (url) {
+      const { hostname, pathname: path } = url
+      Object.assign(res.locals, {
+        // uri,
+        url: String(url),
+        hostname,
+        path,
+        originalUrl: Object.keys(req.params).length
+          ? `${path}?${new URLSearchParams(req.params)}`
+          : path
+      })
+      log.info('url:', uri, String(url))
+      next()
+    } else {
+      log.error('unable to parse:', uri)
+      res.status(404).send('Not found')
+    }
+  }
+}
+
+/**
+ * @param {string} uri
+ * @returns {URL}
+ */
+function getFullUrl (uri) {
+  return uri.includes('://')
+    ? new URL(uri)
+    : new URL(`https://${uri}`)
 }
