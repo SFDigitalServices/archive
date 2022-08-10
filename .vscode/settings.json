@@ -1,0 +1,16 @@
+{
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "editor.lightbulb.enabled": false
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file"
+  },
+  "yaml.schemas": {
+    "config/schemas/site.json": "config/sites/**/*.yml"
+  }
+}

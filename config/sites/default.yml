@@ -1,0 +1,13 @@
+name: static assets
+
+base_url: https://archive.sf.gov
+
+static:
+  path: public
+  options:
+    fallthrough: true
+
+hostnames:
+  - localhost
+  - '*.archive.sf.gov'
+  - '${HEROKU_APP_NAME}.herokuapp.com'

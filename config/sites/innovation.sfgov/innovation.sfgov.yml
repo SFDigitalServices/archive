@@ -1,0 +1,27 @@
+name: Office of Civic Innovation (MOCI)
+base_url: https://innovation.sfgov.org
+
+archive:
+  collection_id: 19260
+
+hostnames:
+  - www.innovation.sfgov.org
+  - '${HEROKU_APP_NAME}.innovation.sfgov.org'
+
+redirects:
+  - map:
+      /: https://sf.gov/departments/mayors-office-innovation
+      /about-us: https://sf.gov/departments/mayors-office-innovation/about
+      /case-studies: https://sf.gov/case-studies
+      /civic-bridge: https://sf.gov/civic-bridge
+      /contact-us: https://sf.gov/departments/mayors-office-innovation#contact
+      /copy-of-case-studies: https://sf.gov/information/ensuring-wheelchair-users-rideshare-access
+      /copy-of-creating-an-online-affordable: https://sf.gov/information/know-your-rights-rent-board-helps-san-franciscans-rent-smarter
+      /copy-of-ensuring-wheelchair-users-ri: https://sf.gov/information/utilizing-user-centered-design-map-out-streamlined-bidding-process
+      /copy-of-reaching-those-most-in-need: https://sf.gov/information/creating-online-affordable-housing-portal
+      /copy-of-user-centered-design-streamli: https://sf.gov/information/reaching-those-most-need-adobe-maps-user-experience
+      /home: https://sf.gov/departments/mayors-office-innovation
+      /past-projects: https://sf.gov/case-studies
+      /projectsummaries: https://sf.gov/case-studies
+      /resources: https://sf.gov/departments/mayors-office-innovation#resources
+      /what-we-do-1: https://sf.gov/civic-bridge

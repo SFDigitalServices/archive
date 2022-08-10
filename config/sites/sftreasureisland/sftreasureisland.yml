@@ -1,0 +1,12 @@
+name: Treasure Island Development Authority
+base_url: https://sftreasureisland.org
+
+archive:
+  collection_id: 18901
+
+hostnames:
+  - www.sftreasureisland.org
+  - '${HEROKU_APP_NAME}.sftreasureisland.org'
+
+redirects:
+  - file: sftreasureisland.tsv

@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "site configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "base_url"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of this site, for humans"
+    },
+    "base_url": {
+      "type": "string",
+      "description": "The primary (canonical) URL at which this site is/was hosted. The URL must include the protocol, but the pathname is optional.",
+      "pattern": "^https?://"
+    },
+    "hostnames": {
+      "type": "array",
+      "description": "An optional list of hostnames (or hostname patterns) at which this site should be available",
+      "items": {
+        "type": "string",
+        "pattern": "[-*a-z0-9.]+"
+      }
+    },
+    "archive": {
+      "type": "object",
+      "required": ["collection_id"],
+      "properties": {
+        "collection_id": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "string" }
+          ]
+        }
+      }
+    },
+    "redirects": {
+      "type": "array",
+      "description": "One or more sets of redirect rules, which can be specified either as an inline map under the 'map' key or an httpd-style redirect map file under the 'file' key",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "Redirect maps are objects in which the keys are request paths and values are the URL they should redirect to",
+            "required": ["map"],
+            "properties": {
+              "map": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "File redirects indicate a file path (relative to the site configuration) containing an httpd-style redirect map",
+            "required": ["file"],
+            "properties": {
+              "file": {
+                "type": "string"
+              },
+              "type": {
+                "oneOf": [
+                  { "const": "tsv" }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "static": {
+      "type": "object",
+      "description": "The optional static configuration allows each site to serve static files from a directory relative to the project root",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "cacheControl": { "type": "boolean" },
+            "dotfiles": { "type": "string" },
+            "etag": { "type": "boolean" },
+            "extensions": {
+              "oneOf": [
+                { "type": "boolean" },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "fallthrough": { "type": "boolean" },
+            "immutable": { "type": "boolean" },
+            "index": {
+              "oneOf": [
+                { "type": "boolean" },
+                { "type": "string" },
+                {
+                  "type": "array",
+                  "items": { "type" : "string" }
+                }
+              ]
+            },
+            "maxAge": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "string" }
+              ]
+            },
+            "redirect": { "type": "boolean" },
+            "headers": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -10,8 +10,7 @@ There should be one `.feature` file per archived site, and one or more for the `
 Feature: feature name
 Scenarios:
   Background: common setup steps
-    Given request headers:
-      | Host | whatever-sfgov.org |
+    Given request header Host: whatever-sfgov.org
 
   Scenario: /
     When I visit /
