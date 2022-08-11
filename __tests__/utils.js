@@ -1,9 +1,9 @@
-/* eslint-disable no-template-curly-in-string */
 const { expandEnvVars, getFullUrl, unique } = require('../src/utils')
 
 describe('expandEnvVars()', () => {
   const testKey = `TEST_${Date.now().toString(32)}`
   const testValue = 'Hello!'
+  /* eslint-disable no-template-curly-in-string */
   const testStrings = [
     [`$${testKey}`, testValue],
     [`\${${testKey}}`, testValue],
