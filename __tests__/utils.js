@@ -1,5 +1,5 @@
 /* eslint-disable no-template-curly-in-string */
-const { expandEnvVars, unique } = require('../src/utils')
+const { expandEnvVars, getFullUrl, unique } = require('../src/utils')
 
 describe('expandEnvVars()', () => {
   const testKey = `TEST_${Date.now().toString(32)}`
@@ -43,6 +43,18 @@ describe('expandEnvVars()', () => {
         expect(expandEnvVars(str, { FOO: value })).toBe('foo: ')
       }
     }
+  })
+})
+
+describe('getFullUrl()', () => {
+  it('passes through protocol-qualified URLs', () => {
+    expect(getFullUrl('http://foo.com')).toBeURL('http://foo.com/')
+    expect(getFullUrl('http://foo.com/bar')).toBeURL('http://foo.com/bar')
+  })
+
+  it('respects protocol-relative URLs', () => {
+    expect(getFullUrl('//example.com')).toBeURL('https://example.com/')
+    expect(getFullUrl('//example.com', 'http')).toBeURL('http://example.com/')
   })
 })
 

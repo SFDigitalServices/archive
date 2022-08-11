@@ -1,3 +1,5 @@
+const protocolPrefixPattern = /^https?:\/\//
+
 module.exports = {
   expandEnvVars,
   mergeMaps,
@@ -46,7 +48,7 @@ function mergeMaps (map, ...rest) {
  * @returns {URL}
  */
 function getFullUrl (url, defaultProtocol = 'https') {
-  if (/^https?:\/\//.test(url)) {
+  if (protocolPrefixPattern.test(url)) {
     return new URL(url)
   } else if (url.startsWith('//')) {
     return new URL(`${defaultProtocol}:${url}`)
