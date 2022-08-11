@@ -1,6 +1,5 @@
 /* eslint-disable promise/always-return */
 const { Site } = require('../src/sites')
-const { loadRedirects } = require('../src/data')
 const { readFileSync } = require('node:fs')
 const express = require('express')
 const supertest = require('supertest')
@@ -13,21 +12,14 @@ const EXAMPLE_BASE_URL_SLASH = `${EXAMPLE_BASE_URL}/`
 describe('Site', () => {
   describe('name', () => {
     it('names sites appropriately', () => {
-      expect(new Site({
-        base_url: EXAMPLE_BASE_URL,
-        name: 'foo'
-      }).name).toBe('"foo"')
-      expect(new Site({
-        base_url: EXAMPLE_BASE_URL
-      }).name).toBe('<example.com>')
+      expect(new Site({ base_url: EXAMPLE_BASE_URL, name: 'foo' }).name).toBe('"foo"')
+      expect(new Site({ base_url: EXAMPLE_BASE_URL }).name).toBe('<example.com>')
     })
   })
 
   describe('base URL', () => {
     it('works with base_url', () => {
-      const site = new Site({
-        base_url: EXAMPLE_BASE_URL
-      })
+      const site = new Site({ base_url: EXAMPLE_BASE_URL })
       expect(String(site.baseUrl)).toBe(EXAMPLE_BASE_URL_SLASH)
     })
     it('works with archive.base_url', () => {
@@ -365,36 +357,5 @@ describe('Site', () => {
     it('throws if the file does not parse', async () => {
       expect(Site.loadAll('__tests__/__fixtures__/invalid-*.yml')).rejects.toBeInstanceOf(YAMLException)
     })
-  })
-})
-
-describe('loadRedirects()', () => {
-  it('throws on falsy sources', async () => {
-    expect(loadRedirects(null)).rejects.toThrow(/Expected array/)
-    expect(loadRedirects({})).rejects.toThrow(/Expected array/)
-  })
-
-  it('defaults relativePath to "."', async () => {
-    const redirects = await loadRedirects([{
-      file: '__tests__/__fixtures__/basic-redirects.tsv'
-    }])
-    expect(redirects).toBeInstanceOf(Map)
-    expect(redirects.get('/home')).toEqual('https://example.com/')
-  })
-
-  it('does not use the relativePath if falsy', async () => {
-    const redirects = await loadRedirects([{
-      file: '__tests__/__fixtures__/basic-redirects.tsv'
-    }], null)
-    expect(redirects).toBeInstanceOf(Map)
-    expect(redirects.get('/home')).toEqual('https://example.com/')
-  })
-
-  it('respects the relative path', async () => {
-    const redirects = await loadRedirects([{
-      file: '__fixtures__/basic-redirects.tsv'
-    }], '__tests__')
-    expect(redirects).toBeInstanceOf(Map)
-    expect(redirects.get('/home')).toEqual('https://example.com/')
   })
 })
