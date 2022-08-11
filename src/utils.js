@@ -1,7 +1,3 @@
-/**
- * @typedef {import('..').SiteConfigData} SiteConfigData
- */
-
 module.exports = {
   expandEnvVars,
   mergeMaps,
@@ -43,6 +39,12 @@ function mergeMaps (map, ...rest) {
   return map
 }
 
+/**
+ *
+ * @param {string} url
+ * @param {string?} defaultProtocol
+ * @returns {URL}
+ */
 function getFullUrl (url, defaultProtocol = 'https') {
   if (/^https?:\/\//.test(url)) {
     return new URL(url)

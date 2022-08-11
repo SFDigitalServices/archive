@@ -4,6 +4,14 @@ const { readFile } = require('node:fs/promises')
 const { join } = require('node:path')
 const { unique, expandEnvVars, mergeMaps } = require('./utils')
 
+/**
+ * @typedef {import('..').SiteConfigData} SiteConfigData
+ * @typedef {import('..').RedirectMap} RedirectMap
+ * @typedef {import('..').RedirectEntry} RedirectEntry
+ * @typedef {import('..').RedirectFileEntry} RedirectFileEntry
+ * @typedef {import('..').RedirectMapEntry} RedirectMapEntry
+ */
+
 module.exports = {
   getHostnames,
   getInlineRedirects,

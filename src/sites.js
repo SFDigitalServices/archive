@@ -10,9 +10,6 @@ const log = require('./log').scope('site')
 /**
  * @typedef {import('..').SiteConfigData} SiteConfigData
  * @typedef {import('..').RedirectMap} RedirectMap
- * @typedef {import('..').RedirectEntry} RedirectEntry
- * @typedef {import('..').RedirectFileEntry} RedirectFileEntry
- * @typedef {import('..').RedirectMapEntry} RedirectMapEntry
  * @typedef {import('..').ISite} ISite
  */
 

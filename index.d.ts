@@ -9,11 +9,15 @@ export type ArchiveMetadata = {
 
 export type RedirectMap = Map<string, string>
 
-export type RedirectMapEntry = {
+type BaseRedirectEntry = {
+  'trailing-slash': boolean
+}
+
+export type RedirectMapEntry = BaseRedirectEntry & {
   map: Record<string, string>
 }
 
-export type RedirectFileEntry = {
+export type RedirectFileEntry = BaseRedirectEntry & {
   file: string
 }
 
