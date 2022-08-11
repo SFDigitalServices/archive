@@ -209,10 +209,12 @@ describe('Site', () => {
           .expect('location', `${ARCHIVE_BASE_URL}/${site.collectionId}/3/https://${site.baseUrl.hostname}/derp`)
       })
 
-      it.skip('404s on un-archive-able URLs', async () => {
+      /*
+      it('404s on un-archive-able URLs', async () => {
         // TODO: flesh this out if/when Site.prototype.getArchiveUrl()
         // ever returns undefined
       })
+      */
     })
 
     describe('sites on a path of sfgov.org', () => {
