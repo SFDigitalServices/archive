@@ -52,6 +52,10 @@
                 "additionalProperties": {
                   "type": "string"
                 }
+              },
+              "trailing-slash": {
+                "description": "If true, also add redirects for paths with a trailing slash",
+                "type": "boolean"
               }
             }
           },
@@ -67,6 +71,10 @@
                 "oneOf": [
                   { "const": "tsv" }
                 ]
+              },
+              "trailing-slash": {
+                "description": "If true, also add redirects for paths with a trailing slash",
+                "type": "boolean"
               }
             }
           }
