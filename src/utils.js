@@ -9,7 +9,8 @@ module.exports = {
   expandEnvVars,
   mergeMaps,
   readYAML,
-  unique
+  unique,
+  getFullUrl
 }
 
 /**
@@ -54,4 +55,14 @@ function mergeMaps (map, ...rest) {
     }
   }
   return map
+}
+
+function getFullUrl (url, defaultProtocol = 'https') {
+  if (/^https?:\/\//.test(url)) {
+    return new URL(url)
+  } else if (url.startsWith('//')) {
+    return new URL(`${defaultProtocol}:${url}`)
+  } else {
+    return new URL(`${defaultProtocol}://${url}`)
+  }
 }

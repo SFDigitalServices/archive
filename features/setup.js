@@ -2,7 +2,7 @@ const { setWorldConstructor, defineParameterType, Given, When, Then } = require(
 const fetch = require('node-fetch')
 const expect = require('expect')
 const { URL } = require('node:url')
-const { expandEnvVars } = require('../src/utils')
+const { expandEnvVars, getFullUrl } = require('../src/utils')
 const { REDIRECT_PERMANENT, REDIRECT_TEMPORARY } = require('../src/constants')
 
 require('dotenv').config()
@@ -105,15 +105,9 @@ setWorldConstructor(class RequestWorld {
   }
 
   getFullUrl (str, defaultProtocol = 'http') {
-    if (str.includes('://')) {
-      return new URL(str)
-    } else if (str.startsWith('//')) {
-      return new URL(`${defaultProtocol}:${str}`)
-    } else if (str.startsWith('/')) {
-      return new URL(str, this.baseUrl)
-    } else {
-      return new URL(`${defaultProtocol}://${str}`)
-    }
+    return str.startsWith('/')
+      ? new URL(str, this.baseUrl)
+      : getFullUrl(str, defaultProtocol)
   }
 
   async load (url, options = {}) {

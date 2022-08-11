@@ -1,5 +1,6 @@
 const express = require('express')
 const morgan = require('morgan')
+const { getFullUrl } = require('./utils')
 
 /**
  * @typedef {import('..').AppOptions} AppOptions
@@ -73,14 +74,4 @@ function urlAliasHandler ({ prefix, log }) {
       res.status(404).send('Not found')
     }
   }
-}
-
-/**
- * @param {string} uri
- * @returns {URL}
- */
-function getFullUrl (uri) {
-  return uri.includes('://')
-    ? new URL(uri)
-    : new URL(`https://${uri}`)
 }
