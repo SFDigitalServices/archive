@@ -1,5 +1,6 @@
 /* eslint-disable promise/always-return */
-const { Site, loadRedirects } = require('../src/sites')
+const { Site } = require('../src/sites')
+const { loadRedirects } = require('../src/data')
 const { readFileSync } = require('node:fs')
 const express = require('express')
 const supertest = require('supertest')
