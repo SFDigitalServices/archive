@@ -1,5 +1,5 @@
 const express = require('express')
-const morgan = require('morgan')
+const { default: httpMethodFilter } = require('http-method-filter')
 const { getFullUrl } = require('./utils')
 
 /**
@@ -16,7 +16,7 @@ module.exports = async function createApp (options) {
 
   const {
     sites = [],
-    logger
+    allowedMethods = ['GET', 'HEAD', 'OPTIONS']
   } = options || {}
 
   const aliasPrefix = '/_/'
@@ -27,11 +27,15 @@ module.exports = async function createApp (options) {
     // only trust one level of proxy forwarding
     // see: <https://expressjs.com/en/guide/behind-proxies.html>
     .set('trust proxy', 1)
-    .use(logger === false ? noopHandler : logger || morgan('combined'))
-    .use(aliasPrefix, urlAliasHandler({
-      prefix: aliasPrefix,
-      log: log.scope('alias')
-    }))
+
+  if (allowedMethods?.length) {
+    app.use(httpMethodFilter(allowedMethods))
+  }
+
+  app.use(aliasPrefix, urlAliasHandler({
+    prefix: aliasPrefix,
+    log: log.scope('alias')
+  }))
 
   for (const site of sites) {
     try {
@@ -82,9 +86,4 @@ function urlAliasHandler ({ prefix, log }) {
       res.status(404).send('Not found')
     }
   }
-}
-
-/** @type {express.RequestHandler} */
-function noopHandler (req, res, next) {
-  return next()
 }
