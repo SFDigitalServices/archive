@@ -2,7 +2,6 @@
 const express = require('express')
 const supertest = require('supertest')
 const createApp = require('../src/app')
-const { REDIRECT_TEMPORARY, REDIRECT_PERMANENT } = require('../src/constants')
 const { Site } = require('../src/sites')
 
 require('../lib/test-setup')
