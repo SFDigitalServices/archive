@@ -1,4 +1,7 @@
 /** @type {import('jest').Config} */
 module.exports = {
-  collectCoverage: true
+  collectCoverage: true,
+  setupFiles: [
+    './lib/test-setup.js'
+  ]
 }
