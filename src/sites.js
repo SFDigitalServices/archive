@@ -1,4 +1,5 @@
 const express = require('express')
+const { extname } = require('node:path')
 const { readFile } = require('node:fs/promises')
 const { URL } = require('node:url')
 const { dirname, join } = require('node:path')
@@ -314,9 +315,9 @@ async function loadRedirects (sources, relativeToPath = '.') {
   const fileMaps = await Promise.all(
     sources
       .filter(source => source.file)
-      .map(({ file }) => {
+      .map(({ file, ...options }) => {
         const path = relativeToPath ? join(relativeToPath, file) : file
-        return loadRedirectMap(path)
+        return loadRedirectMap(path, options)
           .then(lines => new Map(lines))
       })
   )
@@ -334,10 +335,12 @@ async function loadRedirects (sources, relativeToPath = '.') {
 function getInlineRedirects (sources) {
   const map = new Map()
   if (!sources) return map
-  const entries = sources
+  const maps = sources
     .filter(source => source.map)
-    .flatMap(source => Object.entries(source.map))
-  return new Map(entries)
+    .map(({ map, ...options }) => {
+      return applyRedirectOptions(new Map(Object.entries(map)), options)
+    })
+  return mergeMaps(new Map(), ...maps)
 }
 
 /**
@@ -356,14 +359,35 @@ function getInlineRedirects (sources) {
  * @param {string} path
  * @returns {Promise<RedirectMap>}
  */
-async function loadRedirectMap (path) {
+async function loadRedirectMap (path, options) {
   const data = await readFile(path, 'utf8')
   const entries = data
     .split(/[\n\r]+/)
     .map(line => line.trim())
     .filter(line => line.length && !line.startsWith('#'))
     .map(line => line.split(/\s+/))
-  return new Map(entries)
+  return applyRedirectOptions(new Map(entries), options)
+}
+
+/**
+ *
+ * @param {RedirectMap} map
+ * @param {{ 'trailing-slash': boolean }} options
+ * @returns {RedirectMap}
+ */
+function applyRedirectOptions (map, options) {
+  const {
+    'trailing-slash': trailingSlash
+  } = options || {}
+  if (trailingSlash) {
+    for (const [from, to] of map.entries()) {
+      const ext = extname(from)
+      if (!ext && !from.endsWith('/')) {
+        map.set(`${from}/`, to)
+      }
+    }
+  }
+  return map
 }
 
 /**
