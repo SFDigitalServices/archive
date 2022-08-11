@@ -25,3 +25,4 @@ redirects:
       /projectsummaries: https://sf.gov/case-studies
       /resources: https://sf.gov/departments/mayors-office-innovation#resources
       /what-we-do-1: https://sf.gov/civic-bridge
+    trailing-slash: true
