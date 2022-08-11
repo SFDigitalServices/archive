@@ -1,6 +1,7 @@
 const createApp = require('./src/app')
 const { Site } = require('./src/sites')
 const log = require('./src/log').scope('server')
+const morgan = require('morgan')
 
 const { NODE_ENV } = process.env
 if (NODE_ENV !== 'production') {
@@ -14,6 +15,8 @@ if (!PORT) throw new Error('$PORT is unset')
 Site.loadAll('config/sites/**/*.yml', { cwd: __dirname })
   .then(sites => createApp({ sites }))
   .then(app => {
+    app.use(morgan('combined'))
+
     const server = app.listen(PORT, () => {
       const { address, port } = server.address()
       const host = address === '::' ? 'localhost' : address
