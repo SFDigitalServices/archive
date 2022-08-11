@@ -22,6 +22,7 @@ describe('Site', () => {
       }).name).toBe('<example.com>')
     })
   })
+
   describe('base URL', () => {
     it('works with base_url', () => {
       const site = new Site({
