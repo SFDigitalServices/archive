@@ -1,4 +1,4 @@
-import express from 'express'
+import type express from 'express'
 import type { ServeStaticOptions } from '@types/serve-static'
 
 export type ArchiveMetadata = {
@@ -36,6 +36,7 @@ export type SiteConfigData = {
 export type AppOptions = {
   sites: ISite[]
   allowedMethods: string[]
+  logger?: express.RequestHandler
 }
 
 export interface ISite {
