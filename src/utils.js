@@ -1,6 +1,3 @@
-const yaml = require('js-yaml')
-const { readFile } = require('node:fs/promises')
-
 /**
  * @typedef {import('..').SiteConfigData} SiteConfigData
  */
@@ -8,7 +5,6 @@ const { readFile } = require('node:fs/promises')
 module.exports = {
   expandEnvVars,
   mergeMaps,
-  readYAML,
   unique,
   getFullUrl
 }
@@ -29,16 +25,6 @@ function expandEnvVars (str, vars = process.env) {
 
 function unique (value, index, list) {
   return list.indexOf(value) === index
-}
-
-/**
- *
- * @param {string} path
- * @returns {Promise<SiteConfigData>}
- */
-async function readYAML (path) {
-  const data = await readFile(path, 'utf8')
-  return yaml.load(data)
 }
 
 /**
