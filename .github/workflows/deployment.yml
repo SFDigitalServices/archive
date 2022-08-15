@@ -51,6 +51,7 @@ jobs:
       - name: add test subdomains
         if: env.HEROKU_APP_NAME
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
           PR=$(gh pr view --json number --jq .number)
