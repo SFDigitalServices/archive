@@ -26,3 +26,7 @@ Feature: Server
     Then I should be redirected to https://sf.gov/departments/city-administrator/treasure-island-development-authority
     When I visit /_/sftreasureisland.org/blah
     Then I should be redirected to https://wayback.archive-it.org/18901/3/https://sftreasureisland.org/blah
+    When I visit /_/innovation.sfgov.org/resources
+    Then I should be redirected to https://sf.gov/departments/mayors-office-innovation#resources
+    When I visit /_/innovation.sfgov.org/resources/
+    Then I should be redirected to https://sf.gov/departments/mayors-office-innovation#resources

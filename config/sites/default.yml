@@ -9,5 +9,5 @@ static:
 
 hostnames:
   - localhost
-  - '*.archive.sf.gov'
+  - '${HEROKU_APP_NAME}.archive.sf.gov'
   - '${HEROKU_APP_NAME}.herokuapp.com'

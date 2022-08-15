@@ -1,5 +1,6 @@
 const express = require('express')
 const morgan = require('morgan')
+const { getFullUrl } = require('./utils')
 
 /**
  * @typedef {import('..').AppOptions} AppOptions
@@ -14,8 +15,11 @@ module.exports = async function createApp (options) {
   const log = require('./log').scope('app')
 
   const {
-    sites = []
+    sites = [],
+    logger
   } = options || {}
+
+  const aliasPrefix = '/_/'
 
   const app = express()
     // disable the X-Powered-By: Express header
@@ -23,9 +27,9 @@ module.exports = async function createApp (options) {
     // only trust one level of proxy forwarding
     // see: <https://expressjs.com/en/guide/behind-proxies.html>
     .set('trust proxy', 1)
-    .use(morgan('combined'))
-    .use('/_/', urlAliasHandler({
-      prefix: '/_/',
+    .use(logger === false ? noopHandler : logger || morgan('combined'))
+    .use(aliasPrefix, urlAliasHandler({
+      prefix: aliasPrefix,
       log: log.scope('alias')
     }))
 
@@ -54,7 +58,12 @@ function urlAliasHandler ({ prefix, log }) {
   return (req, res, next) => {
     const uri = req.path.replace(prefix, '')
     log.info(uri)
-    const url = getFullUrl(uri)
+    let url
+    try {
+      url = getFullUrl(uri)
+    } catch (error) {
+      log.error('url alias parse error:', error)
+    }
     if (url) {
       const { hostname, pathname: path } = url
       Object.assign(res.locals, {
@@ -62,8 +71,8 @@ function urlAliasHandler ({ prefix, log }) {
         url: String(url),
         hostname,
         path,
-        originalUrl: Object.keys(req.params).length
-          ? `${path}?${new URLSearchParams(req.params)}`
+        originalUrl: Object.keys(req.query).length
+          ? `${path}?${new URLSearchParams(req.query)}`
           : path
       })
       log.info('url:', uri, String(url))
@@ -75,12 +84,7 @@ function urlAliasHandler ({ prefix, log }) {
   }
 }
 
-/**
- * @param {string} uri
- * @returns {URL}
- */
-function getFullUrl (uri) {
-  return uri.includes('://')
-    ? new URL(uri)
-    : new URL(`https://${uri}`)
+/** @type {express.RequestHandler} */
+function noopHandler (req, res, next) {
+  return next()
 }

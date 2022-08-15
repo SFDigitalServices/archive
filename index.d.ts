@@ -1,4 +1,4 @@
-import express from 'express'
+import type express from 'express'
 import type { ServeStaticOptions } from '@types/serve-static'
 
 export type ArchiveMetadata = {
@@ -9,11 +9,15 @@ export type ArchiveMetadata = {
 
 export type RedirectMap = Map<string, string>
 
-export type RedirectMapEntry = {
+type BaseRedirectEntry = {
+  'trailing-slash': boolean
+}
+
+export type RedirectMapEntry = BaseRedirectEntry & {
   map: Record<string, string>
 }
 
-export type RedirectFileEntry = {
+export type RedirectFileEntry = BaseRedirectEntry & {
   file: string
 }
 
@@ -36,6 +40,7 @@ export type SiteConfigData = {
 export type AppOptions = {
   sites: ISite[]
   allowedMethods: string[]
+  logger?: express.RequestHandler
 }
 
 export interface ISite {

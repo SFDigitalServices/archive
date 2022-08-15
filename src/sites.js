@@ -1,9 +1,8 @@
 const express = require('express')
-const { readFile } = require('node:fs/promises')
 const { URL } = require('node:url')
 const { dirname, join } = require('node:path')
 const { default: anymatch } = require('anymatch')
-const { unique, expandEnvVars, mergeMaps, readYAML } = require('./utils')
+const { loadRedirects, getHostnames, getInlineRedirects, readYAML } = require('./data')
 const { ARCHIVE_BASE_URL, REDIRECT_PERMANENT } = require('./constants')
 const globby = require('globby')
 const log = require('./log').scope('site')
@@ -11,9 +10,6 @@ const log = require('./log').scope('site')
 /**
  * @typedef {import('..').SiteConfigData} SiteConfigData
  * @typedef {import('..').RedirectMap} RedirectMap
- * @typedef {import('..').RedirectEntry} RedirectEntry
- * @typedef {import('..').RedirectFileEntry} RedirectFileEntry
- * @typedef {import('..').RedirectMapEntry} RedirectMapEntry
  * @typedef {import('..').ISite} ISite
  */
 
@@ -277,93 +273,7 @@ class Site {
 }
 
 module.exports = {
-  Site,
-  loadRedirects,
-  loadRedirectMap
-}
-
-/**
- * @param  {...(string | string[])} urls
- * @returns {string[]}
- */
-function getHostnames (...urls) {
-  return urls
-    .flatMap(hostname => {
-      if (hostname.startsWith('.')) {
-        return `*${hostname}`
-      } else if (hostname.startsWith('www.')) {
-        return [hostname, hostname.replace('www.', '')]
-      }
-      return [hostname]
-    })
-    .filter(unique)
-    .map(host => expandEnvVars(host))
-}
-
-/**
- *
- * @param {RedirectEntry[]} sources
- * @param {string} relativeToPath
- * @returns {Promise<Map<string, string>>}
- */
-async function loadRedirects (sources, relativeToPath = '.') {
-  const map = new Map()
-  if (!Array.isArray(sources)) {
-    throw new Error(`Expected array of sources, but got ${typeof sources}`)
-  }
-  const fileMaps = await Promise.all(
-    sources
-      .filter(source => source.file)
-      .map(({ file }) => {
-        const path = relativeToPath ? join(relativeToPath, file) : file
-        return loadRedirectMap(path)
-          .then(lines => new Map(lines))
-      })
-  )
-  return mergeMaps(map, ...fileMaps)
-}
-
-/**
- * Collect all of the redirect entries with a "map" object
- * into a single Map (from URI => to URL). Keys are merged
- * in the order they're defined.
- *
- * @param {RedirectMapEntry[]} sources
- * @returns {RedirectMap}
- */
-function getInlineRedirects (sources) {
-  const map = new Map()
-  if (!sources) return map
-  const entries = sources
-    .filter(source => source.map)
-    .flatMap(source => Object.entries(source.map))
-  return new Map(entries)
-}
-
-/**
- * Read redirect paths from a file into a single Map. Files are assumed to
- * consist of zero or more lines with whitespace-separated "columns". Empty
- * lines and those beginning with "#" are ignored.
- *
- * ```
- * # this is a comment, and will be ignored
- * # the first and second columns can be separated by any number of spaces or tabs
- * /foo  https://sf.gov/foo
- * # any additional "columns" (after the URL) will be ignored
- * /bar  https://sf.gov # you can put comments here, too
- * ```
- *
- * @param {string} path
- * @returns {Promise<RedirectMap>}
- */
-async function loadRedirectMap (path) {
-  const data = await readFile(path, 'utf8')
-  const entries = data
-    .split(/[\n\r]+/)
-    .map(line => line.trim())
-    .filter(line => line.length && !line.startsWith('#'))
-    .map(line => line.split(/\s+/))
-  return new Map(entries)
+  Site
 }
 
 /**

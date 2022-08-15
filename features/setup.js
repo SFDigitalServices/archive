@@ -2,12 +2,12 @@ const { setWorldConstructor, defineParameterType, Given, When, Then } = require(
 const fetch = require('node-fetch')
 const expect = require('expect')
 const { URL } = require('node:url')
-const { expandEnvVars } = require('../src/utils')
+const { expandEnvVars, getFullUrl } = require('../src/utils')
 const { REDIRECT_PERMANENT, REDIRECT_TEMPORARY } = require('../src/constants')
 
-require('dotenv').config()
+require('../lib/test-setup')
 
-const anyRedirectStatus = [REDIRECT_PERMANENT, REDIRECT_TEMPORARY]
+require('dotenv').config()
 
 const {
   TEST_BASE_URL,
@@ -51,7 +51,7 @@ When('I visit {url}', async function (url) {
 })
 
 Then('I should be redirected to {url}', function (url) {
-  expect(this.response).toRedirectTo(expandEnvVars(url))
+  expect(this.response).toBeFetchRedirect(expandEnvVars(url))
 })
 
 Then('I follow the redirect', async function () {
@@ -60,11 +60,11 @@ Then('I follow the redirect', async function () {
 })
 
 Then('I should be redirected permanently to {url}', function (url) {
-  expect(this.response).toRedirectTo(expandEnvVars(url), REDIRECT_PERMANENT)
+  expect(this.response).toBeFetchRedirect(expandEnvVars(url), REDIRECT_PERMANENT)
 })
 
 Then('I should be redirected temporarily to {url}', function (url) {
-  expect(this.response).toRedirectTo(expandEnvVars(url), REDIRECT_TEMPORARY)
+  expect(this.response).toBeFetchRedirect(expandEnvVars(url), REDIRECT_TEMPORARY)
 })
 
 Then('I should get status code {int}', function (code) {
@@ -105,15 +105,9 @@ setWorldConstructor(class RequestWorld {
   }
 
   getFullUrl (str, defaultProtocol = 'http') {
-    if (str.includes('://')) {
-      return new URL(str)
-    } else if (str.startsWith('//')) {
-      return new URL(`${defaultProtocol}:${str}`)
-    } else if (str.startsWith('/')) {
-      return new URL(str, this.baseUrl)
-    } else {
-      return new URL(`${defaultProtocol}://${str}`)
-    }
+    return str.startsWith('/')
+      ? new URL(str, this.baseUrl)
+      : getFullUrl(str, defaultProtocol)
   }
 
   async load (url, options = {}) {
@@ -151,32 +145,6 @@ function getEnvTestUrl () {
   }
   return `http://localhost:${PORT}`
 }
-
-expect.extend({
-  /**
-   *
-   * @param {fetch.Response} res
-   * @param {string} url
-   * @param {number} expectedStatus
-   * @returns {{ pass: boolean, message: () => string }}
-   */
-  toRedirectTo (res, url, expectedStatus) {
-    const { status, headers } = res
-    const matchesStatus = expectedStatus
-      ? status === expectedStatus
-      : anyRedirectStatus.includes(status)
-    const locationHeader = headers.get('Location')
-    const locationMatch = locationHeader === url
-    return {
-      pass: matchesStatus && locationMatch,
-      message () {
-        return matchesStatus
-          ? `Expected Location header to match:\n\t${url}\nbut got:\n\t${locationHeader}`
-          : `Expected HTTP status ${expectedStatus || anyRedirectStatus.join(' or ')}, but got ${status}`
-      }
-    }
-  }
-})
 
 function debug (...args) {
   if (NODE_ENV === 'development' || DEBUG === '1') {
