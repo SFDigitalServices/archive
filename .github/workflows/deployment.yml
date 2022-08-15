@@ -23,15 +23,16 @@ jobs:
         with:
           node-version: 16
 
-      - name: set HEROKU_APP_NAME
-        run: echo HEROKU_APP_NAME="$(scripts/get-app-name.js $TEST_BASE_URL)" >> $GITHUB_ENV
-
       - name: set TEST_BASE_URL from inputs.test_base_url
         if: inputs.test_base_url
         run: echo TEST_BASE_URL="${{ inputs.test_base_url }}" >> $GITHUB_ENV
       - name: set TEST_BASE_URL from deployment payload
         if: github.event.deployment_status.state == 'success' && github.event.deployment.payload.web_url
         run: echo TEST_BASE_URL="${{ github.event.deployment.payload.web_url }}" >> $GITHUB_ENV
+
+      - name: set HEROKU_APP_NAME
+        run: echo HEROKU_APP_NAME="$(scripts/get-app-name.js $TEST_BASE_URL)" >> $GITHUB_ENV
+
       - name: set TEST_SUBDOMAIN from inputs.test_subdomain
         if: inputs.test_subdomain
         run: echo TEST_SUBDOMAIN="${{ inputs.test_subdomain }}" >> $GITHUB_ENV
