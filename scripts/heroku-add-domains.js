@@ -36,7 +36,7 @@ if (HEROKU_APP_NAME) {
   console.warn('pass an app name or set HEROKU_APP_NAME')
 }
 
-function heroku (command, args = []) {
+function heroku (command, ...args) {
   const allArgs = [command, '-a', HEROKU_APP_NAME, ...args]
   console.log('[run] heroku', ...allArgs)
   return spawnSync('heroku', allArgs, { stdio: 'inherit' })
