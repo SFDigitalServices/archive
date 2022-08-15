@@ -14,6 +14,9 @@ on:
           is the pull request number.
         required: false
 
+env:
+  PRODUCTION_APP_NAME: sfgov-archive
+
 jobs:
   integration-test:
     runs-on: ubuntu-latest
@@ -45,16 +48,17 @@ jobs:
             echo "HEROKU_APP_NAME is empty; not setting TEST_SUBDOMAIN" >> /dev/stderr
           fi
       - name: conditionally set TEST_ENV=production
-        if: github.event.deployment.environment == 'sfgov-archive' || github.event.deployment.production_environment
+        if: github.event.deployment.environment == env.PRODUCTION_APP_NAME || github.event.deployment.production_environment
         run: echo TEST_ENV=production >> $GITHUB_ENV
 
+      - run: npm install
+
       - name: add test subdomains (for pull requests only)
-        if: contains(env.HEROKU_APP_NAME, '-pr-')
+        if: env.HEROKU_APP_NAME && env.HEROKU_APP_NAME != env.PRODUCTION_APP_NAME
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
-          npm i -g heroku
+          npm install --location=global heroku
           scripts/heroku-add-domains.js "$HEROKU_APP_NAME"
 
-      - run: npm install
       - run: npm run test:features
