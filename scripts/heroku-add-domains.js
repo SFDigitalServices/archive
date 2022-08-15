@@ -21,15 +21,9 @@ if (HEROKU_APP_NAME) {
       if (domains.length) {
         console.log('adding %d domains:', domains.length, domains.join(', '))
         for (const domain of domains) {
-          console.log(`heroku domains:add -a ${HEROKU_APP_NAME} ${domain}`)
-          spawnSync(
-            'heroku',
-            ['domains:add', '-a', HEROKU_APP_NAME, domain],
-            {
-              stdio: 'inherit'
-            }
-          )
+          heroku('domains:add', domain)
         }
+        heroku('domains:wait')
       } else {
         console.warn('no domains found')
       }
@@ -40,4 +34,10 @@ if (HEROKU_APP_NAME) {
     })
 } else {
   console.warn('pass an app name or set HEROKU_APP_NAME')
+}
+
+function heroku (command, args = []) {
+  const allArgs = [command, '-a', HEROKU_APP_NAME, ...args]
+  console.log('[run] heroku', ...allArgs)
+  return spawnSync('heroku', allArgs, { stdio: 'inherit' })
 }
