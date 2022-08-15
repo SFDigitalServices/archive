@@ -48,17 +48,13 @@ jobs:
         if: github.event.deployment.environment == 'sfgov-archive' || github.event.deployment.production_environment
         run: echo TEST_ENV=production >> $GITHUB_ENV
 
-      - name: add test subdomains
-        if: env.HEROKU_APP_NAME
+      - name: add test subdomains (for pull requests only)
+        if: contains(env.HEROKU_APP_NAME, '-pr-')
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
-          PR=$(gh pr view --json number --jq .number)
-          if [[ "$PR" != "" && "$HEROKU_APP_NAME" != "" ]]; then
-            npm i -g heroku
-            scripts/heroku-add-domains.js "$HEROKU_APP_NAME"
-          fi
+          npm i -g heroku
+          scripts/heroku-add-domains.js "$HEROKU_APP_NAME"
 
       - run: npm install
       - run: npm run test:features
