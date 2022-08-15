@@ -8,6 +8,7 @@ const { unique, expandEnvVars, mergeMaps } = require('./utils')
  * @typedef {import('..').SiteConfigData} SiteConfigData
  * @typedef {import('..').RedirectMap} RedirectMap
  * @typedef {import('..').RedirectEntry} RedirectEntry
+ * @typedef {import('..').RedirectOptions} RedirectOptions
  * @typedef {import('..').RedirectFileEntry} RedirectFileEntry
  * @typedef {import('..').RedirectMapEntry} RedirectMapEntry
  */
@@ -39,7 +40,6 @@ function getHostnames (...urls) {
 }
 
 /**
- *
  * @param {RedirectEntry[]} sources
  * @param {string} relativeToPath
  * @returns {Promise<Map<string, string>>}
@@ -94,6 +94,7 @@ function getInlineRedirects (sources) {
  * ```
  *
  * @param {string} path
+ * @param {RedirectOptions} options
  * @returns {Promise<RedirectMap>}
  */
 async function loadRedirectMap (path, options) {
@@ -107,9 +108,8 @@ async function loadRedirectMap (path, options) {
 }
 
 /**
- *
  * @param {RedirectMap} map
- * @param {{ 'trailing-slash': boolean }} options
+ * @param {RedirectOptions} options
  * @returns {RedirectMap}
  */
 function applyRedirectOptions (map, options) {
@@ -128,7 +128,6 @@ function applyRedirectOptions (map, options) {
 }
 
 /**
- *
  * @param {string} path
  * @returns {Promise<SiteConfigData>}
  */
