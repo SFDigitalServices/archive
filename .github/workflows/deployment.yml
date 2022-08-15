@@ -14,6 +14,9 @@ on:
           is the pull request number.
         required: false
 
+env:
+  PRODUCTION_APP_NAME: sfgov-archive
+
 jobs:
   integration-test:
     runs-on: ubuntu-latest
@@ -29,22 +32,33 @@ jobs:
       - name: set TEST_BASE_URL from deployment payload
         if: github.event.deployment_status.state == 'success' && github.event.deployment.payload.web_url
         run: echo TEST_BASE_URL="${{ github.event.deployment.payload.web_url }}" >> $GITHUB_ENV
+
+      - name: set HEROKU_APP_NAME
+        run: echo HEROKU_APP_NAME="$(scripts/get-app-name.js $TEST_BASE_URL)" >> $GITHUB_ENV
+
       - name: set TEST_SUBDOMAIN from inputs.test_subdomain
         if: inputs.test_subdomain
         run: echo TEST_SUBDOMAIN="${{ inputs.test_subdomain }}" >> $GITHUB_ENV
       - name: derive TEST_SUBDOMAIN from TEST_BASE_URL
         if: env.TEST_SUBDOMAIN == null
         run: |
-          export HEROKU_APP="$(scripts/get-app-name.js $TEST_BASE_URL)"
-          echo "HEROKU_APP='$HEROKU_APP'"
-          if [ "$HEROKU_APP" != "" ]; then
-            echo TEST_SUBDOMAIN="${HEROKU_APP}." >> $GITHUB_ENV
+          if [ "$HEROKU_APP_NAME" != "" ]; then
+            echo TEST_SUBDOMAIN="${HEROKU_APP_NAME}." >> $GITHUB_ENV
           else
-            echo "HEROKU_APP is empty; not setting TEST_SUBDOMAIN" >> /dev/stderr
+            echo "HEROKU_APP_NAME is empty; not setting TEST_SUBDOMAIN" >> /dev/stderr
           fi
       - name: conditionally set TEST_ENV=production
-        if: github.event.deployment.environment == 'sfgov-archive' || github.event.deployment.production_environment
+        if: github.event.deployment.environment == env.PRODUCTION_APP_NAME || github.event.deployment.production_environment
         run: echo TEST_ENV=production >> $GITHUB_ENV
 
       - run: npm install
+
+      - name: add test subdomains (for pull requests only)
+        if: env.HEROKU_APP_NAME && env.HEROKU_APP_NAME != env.PRODUCTION_APP_NAME
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          npm install --location=global heroku
+          scripts/heroku-add-domains.js "$HEROKU_APP_NAME"
+
       - run: npm run test:features

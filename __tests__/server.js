@@ -6,15 +6,6 @@ const { Site } = require('../src/sites')
 
 require('../lib/test-setup')
 
-const allowedMethods = ['GET', 'HEAD', 'OPTIONS']
-const notAllowedMethods = [
-  'DELETE',
-  'PATCH',
-  'POST',
-  'PUT',
-  'TRACE'
-]
-
 describe('createApp()', () => {
   it('defaults to no options', async () => {
     await expect(createApp()).resolves.toBeInstanceOf(Function)
@@ -96,32 +87,85 @@ describe('url aliasing at /_/', () => {
   })
 })
 
-describe('server logic', () => {
-  describe.skip('allowed methods', () => {
-    it('allows read-only HTTP verbs', async () => {
+describe('app options', () => {
+  /**
+   * NB: the HTTP method filter sends a 405 (Method Not Allowed) status,
+   * and requests that fall through will return a 404 (Not Found).
+   */
+  const notAllowed = { status: 405 }
+  const allowedNotFound = { status: 404 }
+  describe('allowedMethods', () => {
+    it('defaults to GET, HEAD, and OPTIONS', async () => {
+      const allowedMethods = ['GET', 'HEAD', 'OPTIONS']
       const server = await createServer({ sites: [] })
       for (const method of allowedMethods) {
-        expect(testRequest(server, '/', method)).toResolveWithStatus(404)
+        await expect(testRequest(server, '/', method))
+          .resolves.toMatchObject(allowedNotFound)
       }
     })
 
-    it('does not allow other HTTP verbs', async () => {
+    it('rejects other verbs', async () => {
+      const notAllowedMethods = [
+        'DELETE',
+        'PATCH',
+        'POST',
+        'PUT',
+        'TRACE'
+      ]
       const server = await createServer({ sites: [] })
       for (const method of notAllowedMethods) {
-        expect(testRequest(server, '/', method)).toResolveWithStatus(405)
+        await expect(testRequest(server, '/', method))
+          .resolves.toMatchObject(notAllowed)
+      }
+    })
+
+    it('disables the method filter if allowedMethods is falsy', async () => {
+      for (const allowedMethods of [
+        null,
+        undefined,
+        false,
+        []
+      ]) {
+        const server = await createServer({ sites: [], allowedMethods })
+        expect(testRequest(server, '/', 'GET'))
+          .resolves.toMatchObject(allowedNotFound)
+      }
+    })
+
+    it('respects the allowedMethods option if provided', async () => {
+      const allowedMethods = ['GET', 'POST']
+      const notAllowedMethods = ['HEAD', 'PUT']
+      const server = await createServer({
+        sites: [],
+        allowedMethods
+      })
+      for (const method of allowedMethods) {
+        await expect(testRequest(server, '/', method))
+          .resolves.toMatchObject(allowedNotFound)
+      }
+      for (const method of notAllowedMethods) {
+        await expect(testRequest(server, '/', method))
+          .resolves.toMatchObject(notAllowed)
       }
     })
   })
 })
 
+/**
+ * @param {import('..').AppOptions} options
+ * @returns {Promise<express.Application>}
+ */
 async function createServer (options) {
-  const app = await createApp({
-    logger: false,
-    ...options
-  })
+  const app = await createApp(options)
   return express().use(app)
 }
 
+/**
+ * @param {express.Application} app
+ * @param {string} url
+ * @param {string} method
+ * @returns {Promise<supertest.Response>}
+ */
 async function testRequest (app, url, method = 'GET') {
   return supertest(app)[method.toLowerCase()](url)
 }

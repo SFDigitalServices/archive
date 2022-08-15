@@ -9,17 +9,17 @@ export type ArchiveMetadata = {
 
 export type RedirectMap = Map<string, string>
 
-type BaseRedirectEntry = {
+export type RedirectOptions = {
   'trailing-slash': boolean
 }
 
-export type RedirectMapEntry = BaseRedirectEntry & {
+export type RedirectMapEntry = {
   map: Record<string, string>
-}
+} & RedirectOptions
 
-export type RedirectFileEntry = BaseRedirectEntry & {
+export type RedirectFileEntry = {
   file: string
-}
+} & RedirectOptions
 
 export type RedirectEntry = RedirectMapEntry | RedirectFileEntry
 
@@ -40,7 +40,6 @@ export type SiteConfigData = {
 export type AppOptions = {
   sites: ISite[]
   allowedMethods: string[]
-  logger?: express.RequestHandler
 }
 
 export interface ISite {
