@@ -24,7 +24,7 @@ jobs:
           node-version: 16
 
       - name: set HEROKU_APP_NAME
-        run: echo HEROKU_APP="$(scripts/get-app-name.js $TEST_BASE_URL)" >> $GITHUB_ENV
+        run: echo HEROKU_APP_NAME="$(scripts/get-app-name.js $TEST_BASE_URL)" >> $GITHUB_ENV
 
       - name: set TEST_BASE_URL from inputs.test_base_url
         if: inputs.test_base_url
