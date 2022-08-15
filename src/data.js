@@ -115,7 +115,7 @@ async function loadRedirectMap (path, options) {
 function applyRedirectOptions (map, options) {
   const {
     'trailing-slash': trailingSlash
-  } = options || {}
+  } = options
   if (trailingSlash) {
     for (const [from, to] of map.entries()) {
       const ext = extname(from)
