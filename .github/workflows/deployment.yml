@@ -23,6 +23,9 @@ jobs:
         with:
           node-version: 16
 
+      - name: set HEROKU_APP_NAME
+        run: echo HEROKU_APP="$(scripts/get-app-name.js $TEST_BASE_URL)" >> $GITHUB_ENV
+
       - name: set TEST_BASE_URL from inputs.test_base_url
         if: inputs.test_base_url
         run: echo TEST_BASE_URL="${{ inputs.test_base_url }}" >> $GITHUB_ENV
@@ -35,16 +38,25 @@ jobs:
       - name: derive TEST_SUBDOMAIN from TEST_BASE_URL
         if: env.TEST_SUBDOMAIN == null
         run: |
-          export HEROKU_APP="$(scripts/get-app-name.js $TEST_BASE_URL)"
-          echo "HEROKU_APP='$HEROKU_APP'"
-          if [ "$HEROKU_APP" != "" ]; then
-            echo TEST_SUBDOMAIN="${HEROKU_APP}." >> $GITHUB_ENV
+          if [ "$HEROKU_APP_NAME" != "" ]; then
+            echo TEST_SUBDOMAIN="${HEROKU_APP_NAME}." >> $GITHUB_ENV
           else
-            echo "HEROKU_APP is empty; not setting TEST_SUBDOMAIN" >> /dev/stderr
+            echo "HEROKU_APP_NAME is empty; not setting TEST_SUBDOMAIN" >> /dev/stderr
           fi
       - name: conditionally set TEST_ENV=production
         if: github.event.deployment.environment == 'sfgov-archive' || github.event.deployment.production_environment
         run: echo TEST_ENV=production >> $GITHUB_ENV
+
+      - name: add test subdomains
+        if: env.HEROKU_APP_NAME
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          PR=$(gh pr view --json number --jq .number)
+          if [[ "$PR" != "" && "$HEROKU_APP_NAME" != "" ]]; then
+            npm i -g heroku
+            scripts/heroku-add-domains.js "$HEROKU_APP_NAME"
+          fi
 
       - run: npm install
       - run: npm run test:features
