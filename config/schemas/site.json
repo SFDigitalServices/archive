@@ -48,6 +48,7 @@
             "required": ["map"],
             "properties": {
               "map": {
+                "description": "A mapping from one or more input paths to fully-qualified redirect URLs",
                 "type": "object",
                 "additionalProperties": {
                   "type": "string"
@@ -60,16 +61,17 @@
             }
           },
           {
-            "type": "object",
             "description": "File redirects indicate a file path (relative to the site configuration) containing an httpd-style redirect map",
+            "type": "object",
             "required": ["file"],
             "properties": {
               "file": {
-                "type": "string"
+                "type": "string",
+                "description": "The path of the redirect map file, typically ending in .tsv, relative to this YAML configuration"
               },
               "type": {
-                "oneOf": [
-                  { "const": "tsv" }
+                "enum": [
+                  "tsv"
                 ]
               },
               "trailing-slash": {
