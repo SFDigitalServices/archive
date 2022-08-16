@@ -7,7 +7,7 @@
   },
   "scripts": {
     "develop": "run-p start test:watch",
-    "lint": "eslint .",
+    "lint": "eslint . scripts/*.js",
     "start": "nodemon --config config/nodemon.develop.json server.js",
     "test": "run-s test:unit test:features",
     "test:features": "cucumber-js --config config/cucumber.js",
