@@ -1,0 +1,9 @@
+name: Business Portal
+base_url: https://businessportal.sfgov.org/
+
+hostnames:
+  - www.businessportal.sfgov.org
+
+redirects:
+  - file: businessportal.sfgov.tsv
+    trailing-slash: true
