@@ -2,17 +2,15 @@
 /* eslint-disable promise/always-return, promise/catch-or-return */
 const fetch = require('node-fetch')
 const { createWriteStream } = require('node:fs')
-const { dirname } = require('node:path')
-const { loadSite, loadRedirects } = require('../src/sites')
+const { Site } = require('../src/sites')
 
 const args = require('yargs').argv
 
 const [filename, output = '/dev/stdout'] = args._
 
-loadSite(filename)
+Site.load(filename)
   .then(async site => {
-    const redirects = await loadRedirects(site.redirects || [], dirname(site.path))
-    const baseUrl = new URL(site.archive.base_url)
+    const { redirects, baseUrl } = site
     console.warn('checking %d redirects...', redirects.size)
 
     const seen = new Set()
