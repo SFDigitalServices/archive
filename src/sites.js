@@ -271,6 +271,22 @@ class Site {
       staticConfig.options
     ))
   }
+
+  /**
+   * @returns {import('..').SiteJSONData}
+   */
+  toJSON () {
+    return {
+      name: this.config.name,
+      baseUrl: this.baseUrl.toString(),
+      hostnames: this.hostnames,
+      redirects: Object.fromEntries(this.redirects.entries()),
+      archive: {
+        active: this.config.archive?.active === true,
+        collectionId: this.collectionId
+      }
+    }
+  }
 }
 
 module.exports = {
