@@ -50,10 +50,7 @@ export interface SiteJSONData {
   baseUrl: string
   hostnames: string[]
   redirects: Record<string, string>
-  archive: {
-    collectionId?: number
-    active: boolean
-  }
+  collectionId?: number
 }
 
 export interface ISite {
