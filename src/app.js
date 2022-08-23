@@ -1,5 +1,6 @@
 const express = require('express')
 const { default: httpMethodFilter } = require('http-method-filter')
+const { createApiRouter } = require('./api')
 const { removePrefix } = require('./utils')
 
 /**
@@ -53,6 +54,8 @@ module.exports = async function createApp (options) {
    * the request path, and the site router knows no difference.
    */
   app.use('/_/:hostname([^/]+)', hostnamePathMiddleware('/_'), siteRouter)
+
+  app.use('/api/v1', createApiRouter(options))
 
   app.use(siteRouter)
 
