@@ -4,7 +4,9 @@ module.exports = {
   expandEnvVars,
   mergeMaps,
   unique,
-  getFullUrl
+  getFullUrl,
+  removePrefix,
+  appendSuffix
 }
 
 /**
@@ -55,4 +57,22 @@ function getFullUrl (url, defaultProtocol = 'https') {
   } else {
     return new URL(`${defaultProtocol}://${url}`)
   }
+}
+
+/**
+ * @param {string?} str
+ * @param {string} prefix
+ * @returns {string}
+ */
+function removePrefix (str, prefix) {
+  return str?.startsWith(prefix) ? str.slice(prefix.length) : str
+}
+
+/**
+ * @param {string} str
+ * @param {string} suffix
+ * @returns {string}
+ */
+function appendSuffix (str, suffix) {
+  return str && !str.endsWith(suffix) ? `${str}${suffix}` : str
 }

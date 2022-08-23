@@ -4,6 +4,7 @@ const { dirname, join } = require('node:path')
 const { default: anymatch } = require('anymatch')
 const { loadRedirects, getHostnames, getInlineRedirects, readYAML } = require('./data')
 const { ARCHIVE_BASE_URL, REDIRECT_PERMANENT } = require('./constants')
+const { appendSuffix, removePrefix } = require('./utils')
 const globby = require('globby')
 const log = require('./log').scope('site')
 
@@ -130,7 +131,7 @@ class Site {
   getArchiveUrl (uri, timestamp = TIMESTAMP_LATEST) {
     const { baseUrl, collectionId } = this
     const collectionPath = collectionId ?? `org-${ARCHIVE_IT_ORG_ID}`
-    const relativeUri = removeStringPrefix(uri, baseUrl.pathname)
+    const relativeUri = removePrefix(uri, baseUrl.pathname)
     const path = `/${collectionPath}/${timestamp}/${baseUrl}${relativeUri}`
     return new URL(path, ARCHIVE_BASE_URL).toString()
   }
@@ -274,18 +275,4 @@ class Site {
 
 module.exports = {
   Site
-}
-
-/**
- *
- * @param {string?} uri
- * @param {string} prefix
- * @returns {string}
- */
-function removeStringPrefix (uri, prefix) {
-  return uri?.startsWith(prefix) ? uri.slice(prefix.length) : ''
-}
-
-function appendSuffix (str, suffix) {
-  return str && !str.endsWith(suffix) ? `${str}${suffix}` : str
 }
