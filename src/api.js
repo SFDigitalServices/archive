@@ -1,6 +1,6 @@
 const { Router } = require('express')
 const { Site } = require('./sites')
-const log = require('./log').scope('api')
+// const log = require('./log').scope('api')
 
 /**
  * @typedef {import('express').RequestHandler} RequestHandler
