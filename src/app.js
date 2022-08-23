@@ -1,6 +1,6 @@
 const express = require('express')
 const { default: httpMethodFilter } = require('http-method-filter')
-const { getFullUrl } = require('./utils')
+const { removePrefix } = require('./utils')
 
 /**
  * @typedef {import('..').AppOptions} AppOptions
@@ -19,8 +19,6 @@ module.exports = async function createApp (options) {
     allowedMethods = ['GET', 'HEAD', 'OPTIONS']
   } = options || {}
 
-  const aliasPrefix = '/_/'
-
   const app = express()
     // disable the X-Powered-By: Express header
     .disable('x-powered-by')
@@ -32,58 +30,46 @@ module.exports = async function createApp (options) {
     app.use(httpMethodFilter(allowedMethods))
   }
 
-  app.use(aliasPrefix, urlAliasHandler({
-    prefix: aliasPrefix,
-    log: log.scope('alias')
-  }))
+  const siteRouter = new express.Router({
+    caseSensitive: true,
+    mergeParams: true
+  })
 
   for (const site of sites) {
     try {
       log.info('site %s: %s %s', site.name, site.baseUrl, site.hostnames?.join(', '))
-      app.use(site.createRouter())
+      siteRouter.use(site.createRouter())
     } catch (error) {
       log.error('site configuration error:', site?.config, error)
     }
   }
 
+  /*
+   * app.use() here mounts the site router at a URI pattern matching
+   * `/_/:hostname` (where `:hostname` matches anything except `/`), preceded by
+   * a tiny middleware that sets res.locals.hostname to the `:hostname` portion.
+   *
+   * From then on out, req.path is everything after the `:hostname` portion of
+   * the request path, and the site router knows no difference.
+   */
+  app.use('/_/:hostname([^/]+)', hostnamePathMiddleware('/_'), siteRouter)
+
+  app.use(siteRouter)
+
   return app
 }
 
 /**
- * The URL alias handler sets res.locals with information about the URL
- * following the provided path prefix. Routers can then use the locals
- * routers to determine the _intended_ `hostname`, `path`, and originalUrl (path +
- * query string)
- *
- * @param {{ prefix: string, log: import('signales').SignaleEntrypoint }} options
+ * @param {string} pathPrefix
  * @returns {express.RequestHandler}
  */
-function urlAliasHandler ({ prefix, log }) {
+function hostnamePathMiddleware (pathPrefix) {
   return (req, res, next) => {
-    const uri = req.path.replace(prefix, '')
-    log.info(uri)
-    let url
-    try {
-      url = getFullUrl(uri)
-    } catch (error) {
-      log.error('url alias parse error:', error)
-    }
-    if (url) {
-      const { hostname, pathname: path } = url
-      Object.assign(res.locals, {
-        // uri,
-        url: String(url),
-        hostname,
-        path,
-        originalUrl: Object.keys(req.query).length
-          ? `${path}?${new URLSearchParams(req.query)}`
-          : path
-      })
-      log.info('url:', uri, String(url))
-      next()
-    } else {
-      log.error('unable to parse:', uri)
-      res.status(404).send('Not found')
-    }
+    const { hostname } = req.params
+    res.locals.hostname = hostname
+    const prefix = `${pathPrefix}/${hostname}`
+    res.locals.path = removePrefix(req.path, prefix)
+    res.locals.originalUrl = removePrefix(req.originalUrl, prefix)
+    next()
   }
 }
