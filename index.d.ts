@@ -42,6 +42,20 @@ export type AppOptions = {
   allowedMethods: string[]
 }
 
+/**
+ * Sites have a different JSON representation than the config data
+ */
+export interface SiteJSONData {
+  name: string
+  baseUrl: string
+  hostnames: string[]
+  redirects: Record<string, string>
+  archive: {
+    collectionId?: number
+    active: boolean
+  }
+}
+
 export interface ISite {
   name: string
   path?: string
@@ -50,4 +64,5 @@ export interface ISite {
   hostnames?: string[]
   config: SiteConfigData
   createRouter: () => express.RequestHandler
+  toJSON: () => SiteJSONData
 }
