@@ -1,6 +1,6 @@
 const express = require('express')
 const { default: httpMethodFilter } = require('http-method-filter')
-const { createApiRouter } = require('./api')
+const { createAPIRouter } = require('./api')
 const { removePrefix } = require('./utils')
 
 /**
@@ -45,6 +45,8 @@ module.exports = async function createApp (options) {
     }
   }
 
+  app.use('/api/v1', createAPIRouter(options))
+
   /*
    * app.use() here mounts the site router at a URI pattern matching
    * `/_/:hostname` (where `:hostname` matches anything except `/`), preceded by
@@ -54,8 +56,6 @@ module.exports = async function createApp (options) {
    * the request path, and the site router knows no difference.
    */
   app.use('/_/:hostname([^/]+)', hostnamePathMiddleware('/_'), siteRouter)
-
-  app.use('/api/v1', createApiRouter(options))
 
   app.use(siteRouter)
 
