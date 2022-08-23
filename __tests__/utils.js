@@ -56,6 +56,11 @@ describe('getFullUrl()', () => {
     expect(getFullUrl('//example.com')).toBeURL('https://example.com/')
     expect(getFullUrl('//example.com', 'http')).toBeURL('http://example.com/')
   })
+
+  it('appens the default protocol if none is provided', () => {
+    expect(getFullUrl('example.com')).toBeURL('https://example.com/')
+    expect(getFullUrl('example.com', 'http')).toBeURL('http://example.com/')
+  })
 })
 
 describe('unique', () => {
