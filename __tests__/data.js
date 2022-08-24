@@ -1,8 +1,26 @@
+/* eslint-disable no-template-curly-in-string */
 const { YAMLException } = require('js-yaml')
-const { loadRedirects, readYAML } = require('../src/data')
+const { getHostnames, loadRedirects, readYAML } = require('../src/data')
 
-describe.skip('getHostnames()', () => {
-  // TODO
+describe('getHostnames()', () => {
+  it('filters out dupes', () => {
+    expect(getHostnames('example.com', 'example.com')).toEqual(['example.com'])
+  })
+
+  it('maps leading "." to "*."', () => {
+    expect(getHostnames('.example.com')).toEqual(['*.example.com'])
+  })
+
+  it('interpolates env vars', () => {
+    // FIXME: mock process.env here
+    process.env.TEST_HOSTNAMES_ENV_VAR = 'wut'
+    expect(getHostnames('${TEST_HOSTNAMES_ENV_VAR}.example.com')).toEqual(['wut.example.com'])
+    delete process.env.TEST_HOSTNAMES_ENV_VAR
+  })
+
+  it('removes entries with empty leading interpolations', () => {
+    expect(getHostnames('${derp}.example.com')).toEqual([])
+  })
 })
 
 describe.skip('getInlineRedirects()', () => {

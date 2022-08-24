@@ -37,6 +37,7 @@ function getHostnames (...urls) {
     })
     .filter(unique)
     .map(host => expandEnvVars(host))
+    .filter(host => !host.startsWith('.'))
 }
 
 /**
