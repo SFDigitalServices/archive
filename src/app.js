@@ -45,7 +45,7 @@ module.exports = async function createApp (options) {
     }
   }
 
-  app.use('/api/v1', createAPIRouter(options))
+  // app.use('/api/v1', createAPIRouter(options))
 
   /*
    * app.use() here mounts the site router at a URI pattern matching
