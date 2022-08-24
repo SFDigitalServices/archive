@@ -11,5 +11,8 @@
     "*.test.js",
     "**/__fixtures__",
     "**/__tests__"
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "development"
+  }
 }
