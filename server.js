@@ -1,3 +1,4 @@
+/* eslint-disable promise/catch-or-return */
 const createApp = require('./src/app')
 const { Site } = require('./src/sites')
 const log = require('./src/log').scope('server')
@@ -23,9 +24,4 @@ Site.loadAll('config/sites/**/*.yml', { cwd: __dirname })
       log.info('listening on http://%s:%d', host, port)
     })
     return server
-  })
-  .catch(error => {
-    console.error(error)
-    // eslint-disable-next-line no-process-exit
-    process.exit(1)
   })
