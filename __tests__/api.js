@@ -18,7 +18,20 @@ describe('API', () => {
         }
       ]
     })
+
     const app = express().use(createAPIRouter({ sites: [site] }))
+
+    describe('error states', () => {
+      it('throws when multiple sites have the same hostname', () => {
+        expect(() => createAPIRouter({
+          sites: [
+            new Site({ base_url: 'http://example.com' }),
+            new Site({ base_url: 'http://example.com' })
+          ]
+        })).toThrow(/Multiple sites map to the hostname "example.com"/)
+      })
+    })
+
     it('creates a router that reponds to / with HTML', () => {
       return supertest(app)
         .get('/')
@@ -34,9 +47,7 @@ describe('API', () => {
         .expect(res => {
           expect(res.body).toEqual({
             status: 'success',
-            data: {
-              sites: [site.toJSON()]
-            }
+            data: [site.toJSON()]
           })
         })
     })
@@ -58,11 +69,9 @@ describe('API', () => {
         .expect(404)
         .expect('content-type', /application\/json/)
         .expect({
-          status: 'error',
-          data: {
-            status: 404,
-            message: 'No site found with hostname "missing.com"'
-          }
+          status: 'fail',
+          code: 404,
+          message: 'No site found with hostname "missing.com"'
         })
     })
   })
