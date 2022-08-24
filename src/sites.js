@@ -3,7 +3,7 @@ const { URL } = require('node:url')
 const { dirname, join } = require('node:path')
 const { default: anymatch } = require('anymatch')
 const { loadRedirects, getHostnames, getInlineRedirects, readYAML } = require('./data')
-const { ARCHIVE_BASE_URL, REDIRECT_PERMANENT } = require('./constants')
+const { ARCHIVE_BASE_URL, REDIRECT_PERMANENT, REDIRECT_TEMPORARY } = require('./constants')
 const { appendSuffix, removePrefix } = require('./utils')
 const globby = require('globby')
 const log = require('./log').scope('site')
@@ -16,10 +16,17 @@ const log = require('./log').scope('site')
 
 const {
   // 571 is the SF Digital Services/SF.gov account
-  ARCHIVE_IT_ORG_ID = '571'
+  ARCHIVE_IT_ORG_ID = '571',
+  NODE_ENV
 } = process.env
 
 const TIMESTAMP_LATEST = 3
+
+// local testing is a *lot* easier with temporary redirects,
+// because browsers cache permanent ones
+const REDIRECT_STATUS = NODE_ENV === 'development'
+  ? REDIRECT_TEMPORARY
+  : REDIRECT_PERMANENT
 
 /** @type {import('@types/serve-static').ServeStaticOptions} */
 const defaultStaticServeOptions = {
@@ -249,11 +256,11 @@ class Site {
       const redirect = this.resolve([originalUrl, path])
       if (redirect) {
         this.log.success('redirect:', redirect)
-        return res.redirect(REDIRECT_PERMANENT, redirect)
+        return res.redirect(REDIRECT_STATUS, redirect)
       } else {
         const archiveUrl = this.getArchiveUrl(originalUrl)
         this.log.success('archive:', archiveUrl)
-        return res.redirect(REDIRECT_PERMANENT, archiveUrl)
+        return res.redirect(REDIRECT_STATUS, archiveUrl)
       }
       // this.log.warn('miss')
       // return next('router')
