@@ -1,0 +1,8 @@
+name: Business Portal
+base_url: https://businessportal.sfgov.org
+
+archive:
+  collection_id: 19187
+
+redirects:
+  - file: bizportal.tsv
