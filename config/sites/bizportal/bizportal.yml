@@ -1,0 +1,11 @@
+name: Business Portal
+base_url: https://businessportal.sfgov.org
+
+hostnames:
+  - "${HEROKU_APP_NAME}.businessportal.sfgov.org"
+
+archive:
+  collection_id: 19187
+
+redirects:
+  - file: bizportal.tsv
