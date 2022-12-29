@@ -9,9 +9,9 @@ redirects:
   - map:
       /: https://sf.gov/reentry-sf
       /about: https://sf.gov/reentry-sf
-      /bhc: https://sf.gov/information/reentry-housing-programs
+      /bhc: https://sf.gov/reentry-sf
       /dashboard: https://sf.gov/reentry-sf
-      /events: https://sf.gov/resource/2022/reentry-events
+      /events: https://sf.gov/reentry-sf
       /gallery: https://sf.gov/reentry-sf
       /minna: https://sf.gov/reentry-sf
       /pictures-of-housing-programs: https://sf.gov/reentry-sf
