@@ -1,12 +1,9 @@
 name: Reentry | CASC - Community Assessment and Services Center
-base_url: https://sfreentry.org
-
-archive:
-  collection_id: 20026
+base_url: https://www.reentrysf.org
 
 hostnames:
-  - www.sfreentry.org
-  - '${HEROKU_APP_NAME}.sfreentry.org'
+  - reentrysf.org
+  - '${HEROKU_APP_NAME}.reentrysf.org'
 
 redirects:
   - map:
