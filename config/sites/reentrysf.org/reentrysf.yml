@@ -1,0 +1,24 @@
+name: Reentry | CASC - Community Assessment and Services Center
+base_url: https://www.reentrysf.org
+
+hostnames:
+  - reentrysf.org
+  - '${HEROKU_APP_NAME}.reentrysf.org'
+
+redirects:
+  - map:
+      /: https://sf.gov/reentry-sf
+      /about: https://sf.gov/reentry-sf
+      /bhc: https://sf.gov/information/reentry-housing-programs
+      /dashboard: https://sf.gov/reentry-sf
+      /events: https://sf.gov/resource/2022/reentry-events
+      /gallery: https://sf.gov/reentry-sf
+      /minna: https://sf.gov/reentry-sf
+      /pictures-of-housing-programs: https://sf.gov/reentry-sf
+      /pretrial: https://sf.gov/reentry-sf
+      /programs: https://sf.gov/reentry-sf
+      /racial-equity: https://sf.gov/reentry-sf
+      /reentryresources: https://sf.gov/reentry-sf
+      /trp: https://sf.gov/reentry-sf
+      /trp-in-the-news: https://sf.gov/reentry-sf
+    trailing-slash: true
