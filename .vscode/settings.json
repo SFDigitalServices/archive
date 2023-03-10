@@ -10,6 +10,10 @@
     "editor.formatOnSave": true,
     "editor.formatOnSaveMode": "file"
   },
+  "files.associations": {
+    "*.wgetrc": "ini",
+    ".wgetrc": "ini"
+  },
   "yaml.schemas": {
     "config/schemas/site.json": "config/sites/**/*.yml"
   }
