@@ -27,7 +27,7 @@ Implicit redirects to archived snapshots assume that all of the URLs for a legac
 
 This is the process by which a single [document](#document) (typically a web page) is crawled and a "snapshot" is saved for public consumption with a web browser. The specific archival mechanism is under review and will be detailed in a forthcoming [ADR](#adrs).
 
-### Legacy site
+### Legacy sites
 
 A "legacy site" is any City-owned site that is no longer relevant and/or superseded by more up-to-date content on [sf.gov]. Most of these are department and public body sites served under subdomains of `sfgov.org`, but some are served on other domains, such as the Board of Supervisors' `sfbos.org` or the Treasure Island Development Authority's `sftreasureisland.org`.
 
@@ -41,12 +41,11 @@ In this repo, the term "document" refers to either a web page in HTML or a well-
 
 ## ADRs
 
-We use [**A**rchitectural **D**ecision **R**ecords][adr] to propose, evaluate, and make decisions about technical architecture. Our ADRs are written as [Markdown] in the [docs/adr directory](./docs/adr).
+We use [Architectural Decision Records][adr] to propose, evaluate, and make decisions about technical architecture. Our ADRs are written as [Markdown] in the [docs/adr directory](./docs/adr).
 
 [sf.gov]: https://sf.gov
 [adr]: https://github.com/joelparkerhenderson/architecture-decision-record#what-is-an-architecture-decision-record
 [markdown]: https://en.wikipedia.org/wiki/Markdown
-[sfgov.org]: https://sfgov.org
 [404]: https://en.wikipedia.org/wiki/HTTP_404
 [301]: https://en.wikipedia.org/wiki/HTTP_301
 [location header]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Location
