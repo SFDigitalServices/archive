@@ -1,0 +1,12 @@
+name: Human Rights Commission
+base_url: https://sf-hrc.org
+
+archive:
+  collection_id: 19238
+
+hostnames:
+  - www.sf-hrc.org
+  - '${HEROKU_APP_NAME}.sf-hrc.org'
+
+redirects:
+  - file: hrc.tsv

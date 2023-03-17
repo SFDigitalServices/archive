@@ -5,6 +5,11 @@
     "editor.formatOnSaveMode": "file",
     "editor.lightbulb.enabled": false
   },
+  "[tsv]": {
+    "editor.tabSize": 4,
+    "editor.useTabStops": true,
+    "editor.insertSpaces": false
+  },
   "[typescript]": {
     "editor.defaultFormatter": "vscode.typescript-language-features",
     "editor.formatOnSave": true,
