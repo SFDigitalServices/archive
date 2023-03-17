@@ -10,6 +10,11 @@
     "editor.formatOnSave": true,
     "editor.formatOnSaveMode": "file"
   },
+  "[tsv]": {
+    "editor.tabSize": 4,
+    "editor.useTabStops": true,
+    "editor.insertSpaces": false
+  },
   "yaml.schemas": {
     "config/schemas/site.json": "config/sites/**/*.yml"
   }
