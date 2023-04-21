@@ -5,7 +5,7 @@ const yargs = require('yargs')
 const { join } = require('node:path')
 const { readFileSync, writeFileSync, mkdirSync } = require('node:fs')
 
-const templateDir = 'config/sites/__template__'
+const templateDir = 'templates/site-config'
 
 globby('**', { cwd: templateDir }).then(templateFiles => {
   const $0 = __filename.replace(`${process.cwd()}/`, '')
@@ -36,7 +36,7 @@ globby('**', { cwd: templateDir }).then(templateFiles => {
     collection_id: collection || 'org-571',
     url: url || 'https://sf.gov'
   }
-  const outputDir = templateDir.replace('__template__', config.slug)
+  const outputDir = join('config/sites', config.slug)
   console.log('new site:', config)
   console.log('+ dir', outputDir)
   mkdirSync(outputDir, { recursive: true })
