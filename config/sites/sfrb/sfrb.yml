@@ -1,0 +1,13 @@
+name: 'Rent board'
+base_url: 'https://sfrb.org'
+archive:
+  collection_id: 20155
+
+hostnames:
+  - 'sfrb.org'
+  - '${HEROKU_APP_NAME}.sfrb.org'
+
+redirects:
+  - map:
+      /: 'https://sf.gov/departments/rent-board'
+  - file: 'sfrb.tsv'
