@@ -2,7 +2,7 @@
   "private": true,
   "engineStrict": true,
   "engines": {
-    "node": ">= 14",
+    "node": ">= 18",
     "npm": ">= 8"
   },
   "scripts": {
