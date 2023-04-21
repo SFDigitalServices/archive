@@ -1,6 +1,7 @@
 const { TEST_ENV } = process.env
 
 module.exports = {
+  /** @type {import('@cucumber/cucumber/lib/api').IConfiguration} */
   default: {
     require: [
       require.resolve('../features/setup')
