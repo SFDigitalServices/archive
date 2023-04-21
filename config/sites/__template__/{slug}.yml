@@ -1,0 +1,13 @@
+name: '{{ site_name }}'
+base_url: 'https://{{ domain }}'
+archive:
+  collection_id: {{ collection_id }}
+
+hostnames:
+  - '{{ domain }}'
+  - '${HEROKU_APP_NAME}.{{ domain }}'
+
+redirects:
+  - map:
+      /: '{{ url }}'
+  - file: '{{ slug }}.tsv'
