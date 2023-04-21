@@ -1,0 +1,13 @@
+name: 'City Administrator'
+base_url: 'https://sfgsa.org'
+archive:
+  collection_id: 19767
+
+hostnames:
+  - 'sfgsa.org'
+  - '${HEROKU_APP_NAME}.sfgsa.org'
+
+redirects:
+  - map:
+      /: 'https://sf.gov/departments/city-administrator'
+  - file: 'sfgsa.tsv'
