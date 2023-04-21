@@ -1,0 +1,12 @@
+name: SF Mayor London Breed
+base_url: https://sfmayor.org
+
+archive:
+  collection_id: 20094
+
+hostnames:
+  - sfmayor.org
+  - '${HEROKU_APP_NAME}.sfmayor.org'
+
+redirects:
+  - file: sfmayor.tsv
