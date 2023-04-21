@@ -1,0 +1,13 @@
+name: 'SF Law Library'
+base_url: 'https://sflawlibrary.org'
+archive:
+  collection_id: 20241
+
+hostnames:
+  - 'sflawlibrary.org'
+  - '${HEROKU_APP_NAME}.sflawlibrary.org'
+
+redirects:
+  - map:
+      /: 'https://sf.gov/departments/san-francisco-law-library'
+  - file: 'sflawlibrary.tsv'
