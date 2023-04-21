@@ -1,0 +1,13 @@
+name: 'OEWD'
+base_url: 'https://oewd.org'
+archive:
+  collection_id: 19795
+
+hostnames:
+  - 'oewd.org'
+  - '${HEROKU_APP_NAME}.oewd.org'
+
+redirects:
+  - map:
+      /: 'https://sf.gov/departments/office-economic-and-workforce-development'
+  - file: 'oewd.tsv'
