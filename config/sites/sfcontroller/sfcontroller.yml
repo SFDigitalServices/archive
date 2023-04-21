@@ -1,0 +1,13 @@
+name: 'SF Controller'
+base_url: 'https://sfcontroller.org'
+archive:
+  collection_id: 19064
+
+hostnames:
+  - 'sfcontroller.org'
+  - '${HEROKU_APP_NAME}.sfcontroller.org'
+
+redirects:
+  - map:
+      /: 'https://sf.gov/departments/controllers-office'
+  - file: 'sfcontroller.tsv'
