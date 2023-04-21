@@ -1,0 +1,13 @@
+name: 'Office of Small Business'
+base_url: 'https://sfosb.org'
+archive:
+  collection_id: 19772
+
+hostnames:
+  - 'sfosb.org'
+  - '${HEROKU_APP_NAME}.sfosb.org'
+
+redirects:
+  - map:
+      /: 'https://sf.gov/departments/office-economic-and-workforce-development/office-small-business'
+  - file: 'sfosb.tsv'
