@@ -6,7 +6,8 @@ module.exports = {
       require.resolve('../features/setup')
     ],
     paths: [
-      'features/**/*.feature'
+      'features/**/*.feature',
+      'config/sites/**/*.feature'
     ],
     publishQuiet: true,
     tags: (TEST_ENV === 'production')
