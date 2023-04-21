@@ -1,4 +1,4 @@
-const { expandEnvVars, getFullUrl, unique } = require('../src/utils')
+const { expandEnvVars, getFullUrl, unique, stripQuotes } = require('../src/utils')
 
 describe('expandEnvVars()', () => {
   const testKey = `TEST_${Date.now().toString(32)}`
@@ -61,5 +61,17 @@ describe('getFullUrl()', () => {
 describe('unique', () => {
   it('works', () => {
     expect(['foo', 'foo', 'bar'].filter(unique)).toEqual(['foo', 'bar'])
+  })
+})
+
+describe('stripQuotes()', () => {
+  it.each([
+    ['"foo"', 'foo'],
+    ['"foo', '"foo'],
+    ['foo"bar', 'foo"bar'],
+    ["'foo'", 'foo'],
+    ["'foo", "'foo"]
+  ])('removes only matched quote pairs', (input, expected) => {
+    expect(stripQuotes(input)).toEqual(expected)
   })
 })
