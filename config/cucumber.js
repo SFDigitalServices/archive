@@ -7,7 +7,8 @@ module.exports = {
     ],
     paths: [
       'features/**/*.feature',
-      'config/sites/**/*.feature'
+      'config/sites/**/*.feature',
+      '!**/__template__/**'
     ],
     publishQuiet: true,
     tags: (TEST_ENV === 'production')
