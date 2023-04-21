@@ -1,0 +1,13 @@
+name: 'Department of Emergency Management'
+base_url: 'https://sfdem.org'
+archive:
+  collection_id: 20222
+
+hostnames:
+  - 'sfdem.org'
+  - '${HEROKU_APP_NAME}.sfdem.org'
+
+redirects:
+  - map:
+      /: 'https://sf.gov/departments/department-emergency-management'
+  - file: 'sfdem.tsv'
