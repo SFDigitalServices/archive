@@ -1,0 +1,13 @@
+name: 'Film SF'
+base_url: 'https://filmsf.org'
+archive:
+  collection_id: 20204
+
+hostnames:
+  - 'filmsf.org'
+  - '${HEROKU_APP_NAME}.filmsf.org'
+
+redirects:
+  - map:
+      /: 'https://sf.gov/departments/office-economic-and-workforce-development/film-sf'
+  - file: 'filmsf.tsv'
