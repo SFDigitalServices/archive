@@ -50,7 +50,8 @@ class Site {
   static async loadAll (globs, opts) {
     const { cwd = '.', ...rest } = opts || {}
     log.debug('loading site configs from:', globs, { cwd })
-    const paths = await globby(globs, { cwd, ...rest })
+    const ignoredGlobs = [globs, '!**/__template__/**'].flat()
+    const paths = await globby(ignoredGlobs, { cwd, ...rest })
     return Promise.all(
       paths.map(path => Site.load(join(cwd, path)))
     )
