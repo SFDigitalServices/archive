@@ -4,7 +4,8 @@ module.exports = {
   expandEnvVars,
   mergeMaps,
   unique,
-  getFullUrl
+  getFullUrl,
+  stripQuotes
 }
 
 /**
@@ -55,4 +56,17 @@ function getFullUrl (url, defaultProtocol = 'https') {
   } else {
     return new URL(`${defaultProtocol}://${url}`)
   }
+}
+
+/**
+ * Remove leading and trailing single or double quotes from a string.
+ * @param {string} str
+ * @returns {string}
+ */
+function stripQuotes (str) {
+  const quote = str.charAt(0)
+  if ((quote === '"' || quote === "'") && str.endsWith(quote)) {
+    return str.slice(1, -1)
+  }
+  return str
 }

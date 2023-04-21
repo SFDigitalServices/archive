@@ -1,7 +1,9 @@
 {
   "recommendations": [
+    "alexkrechik.cucumberautocomplete",
     "ban.spellright",
     "dbaeumer.vscode-eslint",
-    "mechatroner.rainbow-csv"
+    "mechatroner.rainbow-csv",
+    "redhat.vscode-yaml"
   ]
 }

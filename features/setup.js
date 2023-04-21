@@ -2,7 +2,7 @@ const { setWorldConstructor, defineParameterType, Given, When, Then } = require(
 const fetch = require('node-fetch')
 const expect = require('expect')
 const { URL } = require('node:url')
-const { expandEnvVars, getFullUrl } = require('../src/utils')
+const { expandEnvVars, getFullUrl, stripQuotes } = require('../src/utils')
 const { REDIRECT_PERMANENT, REDIRECT_TEMPORARY } = require('../src/constants')
 
 require('../lib/test-setup')
@@ -20,7 +20,7 @@ defineParameterType({
   name: 'url',
   regexp: /\S+/,
   transformer (str) {
-    return expandEnvVars(str)
+    return expandEnvVars(stripQuotes(str))
   }
 })
 

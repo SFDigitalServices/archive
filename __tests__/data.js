@@ -68,4 +68,15 @@ describe('loadRedirects()', () => {
       expect(redirects.get(`${targetPath}/`)).toEqual(expectedUrl)
     })
   })
+
+  describe('ASCII encoding', () => {
+    it('adds ASCII encodings for UTF redirect paths', async () => {
+      const redirects = await loadRedirects([{
+        file: '__tests__/__fixtures__/redirects-with-unicode.tsv',
+        'includes-unicode': true
+      }])
+      expect(redirects.get('/選舉投票')).toEqual('https://sf.gov/zh-hant/ways-vote')
+      expect(redirects.get('/¡buscamos-su-participación-en-nuestro-plan-de-difusión')).toEqual('https://sf.gov/departments/department-elections')
+    })
+  })
 })

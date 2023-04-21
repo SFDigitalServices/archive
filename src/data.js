@@ -116,6 +116,15 @@ function applyRedirectOptions (map, options) {
   const {
     'trailing-slash': trailingSlash
   } = options
+  // encode UTF paths as ASCII for lookups, since we'll get an ASCII-encoded
+  // path from the server
+  const paths = Array.from(map.keys())
+  for (const from of paths) {
+    const encoded = encodeURI(from)
+    if (encoded !== from) {
+      map.set(encoded, map.get(from))
+    }
+  }
   if (trailingSlash) {
     for (const [from, to] of map.entries()) {
       const ext = extname(from)
