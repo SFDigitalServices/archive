@@ -9,4 +9,6 @@ hostnames:
   - '${HEROKU_APP_NAME}.sfmayor.org'
 
 redirects:
+  - map:
+      /: https://sf.gov/departments/office-mayor
   - file: sfmayor.tsv
