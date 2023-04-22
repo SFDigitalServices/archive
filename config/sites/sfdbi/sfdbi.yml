@@ -11,3 +11,4 @@ redirects:
   - map:
       /: 'https://sf.gov/departments/department-building-inspection'
   - file: 'sfdbi.tsv'
+  - file: 'pdfs.tsv'
