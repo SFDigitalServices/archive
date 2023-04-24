@@ -11,5 +11,6 @@ hostnames:
 redirects:
   - map:
       /: https://sf.gov/departments/office-mayor
+      /index.aspx: /
   - file: drupal.tsv
   - file: sfmayor.tsv
