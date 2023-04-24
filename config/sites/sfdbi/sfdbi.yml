@@ -10,5 +10,6 @@ hostnames:
 redirects:
   - map:
       /: 'https://sf.gov/departments/department-building-inspection'
+  - file: 'drupal.tsv'
   - file: 'sfdbi.tsv'
   - file: 'pdfs.tsv'
