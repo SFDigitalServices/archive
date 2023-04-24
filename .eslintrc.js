@@ -27,7 +27,7 @@ module.exports = {
   reportUnusedDisableDirectives: true,
   overrides: [
     {
-      files: 'scripts/**/*.js',
+      files: 'scripts/**/*.{js,mjs}',
       rules: {
         'node/shebang': 0
       }
