@@ -8,6 +8,5 @@ hostnames:
   - '${HEROKU_APP_NAME}.sfdem.org'
 
 redirects:
-  - map:
-      /: 'https://sf.gov/departments/department-emergency-management'
-  - file: 'sfdem.tsv'
+  - file: drupal.tsv
+  - file: sfdem.tsv
