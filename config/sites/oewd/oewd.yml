@@ -8,6 +8,5 @@ hostnames:
   - '${HEROKU_APP_NAME}.oewd.org'
 
 redirects:
-  - map:
-      /: 'https://sf.gov/departments/office-economic-and-workforce-development'
-  - file: 'oewd.tsv'
+  - file: drupal.tsv
+  - file: oewd.tsv
