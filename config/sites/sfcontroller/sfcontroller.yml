@@ -10,4 +10,5 @@ hostnames:
 redirects:
   - map:
       /: 'https://sf.gov/departments/controllers-office'
-  - file: 'sfcontroller.tsv'
+  - file: drupal.tsv
+  - file: sfcontroller.tsv
