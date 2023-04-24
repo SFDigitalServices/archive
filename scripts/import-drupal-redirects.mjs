@@ -9,7 +9,7 @@ async function main () {
 
   while (argv[0] === 'mysql') argv.shift()
 
-  const mysql = execa('mysql', argv, { stdin: 'pipe', stdout: 'pipe', stderr: 'inherit' })
+  const mysql = execa('mysql', [...argv, '-A'], { stdin: 'pipe', stdout: 'pipe', stderr: 'inherit' })
 
   const cols = {
     source: 'from',
