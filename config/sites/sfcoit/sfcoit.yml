@@ -10,4 +10,5 @@ hostnames:
 redirects:
   - map:
       /: 'https://sf.gov/departments/committee-information-technology-coit'
-  - file: 'sfcoit.tsv'
+  - file: drupal.tsv
+  - file: sfcoit.tsv
