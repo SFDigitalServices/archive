@@ -10,4 +10,5 @@ hostnames:
 redirects:
   - map:
       /: 'https://sf.gov/departments/san-francisco-law-library'
-  - file: 'sflawlibrary.tsv'
+  - file: drupal.tsv
+  - file: sflawlibrary.tsv
