@@ -10,4 +10,5 @@ hostnames:
 redirects:
   - map:
       /: 'https://sf.gov/departments/city-administrator'
-  - file: 'sfgsa.tsv'
+  - file: drupal.tsv
+  - file: sfgsa.tsv
