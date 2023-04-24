@@ -1,16 +1,53 @@
 #!/usr/bin/env node
+/* eslint-disable node/no-unpublished-import */
 import { execa } from 'execa'
 import { streamWrite, readableToString, streamEnd, onExit } from '@rauschma/stringio'
 import { unserialize } from 'php-unserialize'
 import { URLSearchParams } from 'node:url'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
 async function main () {
-  const argv = process.argv.slice(2)
+  const {
+    drupal: drupalVersion,
+    _: mysqlArgs
+  } = yargs(hideBin(process.argv))
+    .usage('$0 -- <mysql args>')
+    .option('drupal', {
+      desc: 'Specify the Drupal version so that we can query the database correctly',
+      number: true,
+      choices: [7, 8, 9],
+      default: 7
+    })
+    .argv
 
-  while (argv[0] === 'mysql') argv.shift()
+  const redirects = await getRedirects(mysqlArgs, { drupalVersion })
+  for (const [from, to] of redirects) {
+    console.log([from, to].join('\t'))
+  }
+}
 
-  const mysql = execa('mysql', [...argv, '-A'], { stdin: 'pipe', stdout: 'pipe', stderr: 'inherit' })
+main()
 
+async function getRedirects (mysqlArgs, { drupalVersion }) {
+  while (mysqlArgs[0] === 'mysql') mysqlArgs.shift()
+  const mysql = execa('mysql', [...mysqlArgs, '-A'], { stdin: 'pipe', stdout: 'pipe', stderr: 'inherit' })
+
+  let redirects = []
+  if (drupalVersion === 8) {
+    redirects = getDrupal8Redirects(mysql)
+  } else {
+    redirects = getDrupal7Redirects(mysql)
+  }
+  await onExit(mysql)
+  return redirects
+}
+
+/**
+ * @param {import('execa').ExecaChildProcess} mysql
+ * @returns {[string, string][]}
+ */
+async function getDrupal7Redirects (mysql) {
   const cols = {
     source: 'from',
     source_options: 'fromOptions',
@@ -27,18 +64,9 @@ async function main () {
   await streamWrite(mysql.stdin, query)
   await streamEnd(mysql.stdin)
 
-  const rawOutput = await readableToString(mysql.stdout)
-  const lines = rawOutput.trim().split(/[\n\r]+/)
-  // skip the header
-  lines.shift()
-  const colNames = Object.values(cols)
-  for (const line of lines) {
-    const values = line.split('\t')
-    const {
-      from,
-      fromOptions,
-      to
-    } = Object.fromEntries(colNames.map((col, i) => [col, values[i]]))
+  const rows = await parseRows(mysql.stdout, cols)
+  const redirects = []
+  for (const { from, fromOptions, to } of rows) {
     let fromURL = from
     try {
       const fromOptionsObject = unserialize(fromOptions)
@@ -48,16 +76,56 @@ async function main () {
     } catch (error) {
       // console.error('whoops:', error)
     }
-    console.log([
+    redirects.push([
       pathOrQualifiedURL(fromURL),
       pathOrQualifiedURL(to)
-    ].join('\t'))
+    ])
   }
-
-  await onExit(mysql)
+  return redirects
 }
 
-main()
+/**
+ * @param {import('execa').ExecaChildProcess} mysql
+ * @returns {[string, string][]}
+ */
+async function getDrupal8Redirects (mysql) {
+  const cols = {
+    redirect_source__path: 'from',
+    redirect_redirect__uri: 'to'
+  }
+  const query = `
+    SELECT ${Object.entries(cols).map(([key, alias]) => `${key} AS "${alias}"`).join(', ')}
+    FROM redirect
+    ORDER BY redirect_source__path ASC
+  `
+
+  await streamWrite(mysql.stdin, query)
+  await streamEnd(mysql.stdin)
+
+  const rows = await parseRows(mysql.stdout, cols)
+  return rows.map(({ from, to }) => [
+    pathOrQualifiedURL(from),
+    pathOrQualifiedURL(to)
+  ])
+}
+
+/**
+ *
+ * @param {import('execa').ExecaChildProcess['stdout']} stream
+ * @param {Record<string, string>[]} columns
+ * @returns {Record<typeof columns[string], string>[]}
+ */
+async function parseRows (stream, columns) {
+  const rawOutput = await readableToString(stream)
+  const lines = rawOutput.trim().split(/[\n\r]+/)
+  // skip the header
+  lines.shift()
+  const colNames = Object.values(columns)
+  return lines.map(line => {
+    const values = line.split('\t')
+    return Object.fromEntries(colNames.map((col, i) => [col, values[i]]))
+  })
+}
 
 function pathOrQualifiedURL (str) {
   return /^https?:/.test(str) ? str : addPrefix(str, '/')
