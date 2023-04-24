@@ -8,6 +8,5 @@ hostnames:
   - '${HEROKU_APP_NAME}.filmsf.org'
 
 redirects:
-  - map:
-      /: 'https://sf.gov/departments/office-economic-and-workforce-development/film-sf'
-  - file: 'filmsf.tsv'
+  - file: drupal.tsv
+  - file: filmsf.tsv
