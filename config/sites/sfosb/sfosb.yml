@@ -8,6 +8,5 @@ hostnames:
   - '${HEROKU_APP_NAME}.sfosb.org'
 
 redirects:
-  - map:
-      /: 'https://sf.gov/departments/office-economic-and-workforce-development/office-small-business'
-  - file: 'sfosb.tsv'
+  - file: drupal.tsv
+  - file: sfosb.tsv
