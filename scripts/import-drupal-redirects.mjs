@@ -21,6 +21,7 @@ async function main () {
     SELECT ${Object.entries(cols).map(([key, alias]) => `${key} AS "${alias}"`).join(', ')}
     FROM redirect
     WHERE status = 1
+    ORDER BY source ASC
   `
 
   await streamWrite(mysql.stdin, query)
