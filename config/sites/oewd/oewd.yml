@@ -4,7 +4,8 @@ archive:
   collection_id: 19795
 
 hostnames:
-  - 'oewd.org'
+  - oewd.org
+  - www.oewd.org
   - '${HEROKU_APP_NAME}.oewd.org'
 
 redirects:

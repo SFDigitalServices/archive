@@ -6,6 +6,7 @@ archive:
 
 hostnames:
   - sfmayor.org
+  - www.sfmayor.org
   - '${HEROKU_APP_NAME}.sfmayor.org'
 
 redirects:

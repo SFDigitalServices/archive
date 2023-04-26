@@ -4,7 +4,8 @@ archive:
   collection_id: 20204
 
 hostnames:
-  - 'filmsf.org'
+  - filmsf.org
+  - www.filmsf.org
   - '${HEROKU_APP_NAME}.filmsf.org'
 
 redirects:

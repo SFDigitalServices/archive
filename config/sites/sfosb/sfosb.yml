@@ -4,7 +4,8 @@ archive:
   collection_id: 19772
 
 hostnames:
-  - 'sfosb.org'
+  - sfosb.org
+  - www.sfosb.org
   - '${HEROKU_APP_NAME}.sfosb.org'
 
 redirects:

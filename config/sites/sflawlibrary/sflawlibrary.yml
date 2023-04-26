@@ -4,7 +4,8 @@ archive:
   collection_id: 20241
 
 hostnames:
-  - 'sflawlibrary.org'
+  - sflawlibrary.org
+  - www.sflawlibrary.org
   - '${HEROKU_APP_NAME}.sflawlibrary.org'
 
 redirects:
