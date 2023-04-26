@@ -9,4 +9,6 @@ hostnames:
   - '${HEROKU_APP_NAME}.sfelections.sfgov.org'
 
 redirects:
+  - file: drupal-sfgov.tsv
+  - file: drupal.tsv
   - file: sfelections.tsv

@@ -1,0 +1,14 @@
+name: 'Committee on Information Technology (COIT)'
+base_url: 'https://sfcoit.org'
+archive:
+  collection_id: 19832
+
+hostnames:
+  - 'sfcoit.org'
+  - '${HEROKU_APP_NAME}.sfcoit.org'
+
+redirects:
+  - map:
+      /: 'https://sf.gov/departments/committee-information-technology-coit'
+  - file: drupal.tsv
+  - file: sfcoit.tsv
