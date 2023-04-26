@@ -4,7 +4,8 @@ archive:
   collection_id: 20222
 
 hostnames:
-  - 'sfdem.org'
+  - sfdem.org
+  - www.sfdem.org
   - '${HEROKU_APP_NAME}.sfdem.org'
 
 redirects:

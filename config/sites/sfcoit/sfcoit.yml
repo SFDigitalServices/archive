@@ -4,7 +4,8 @@ archive:
   collection_id: 19832
 
 hostnames:
-  - 'sfcoit.org'
+  - sfcoit.org
+  - www.sfcoit.org
   - '${HEROKU_APP_NAME}.sfcoit.org'
 
 redirects:

@@ -4,7 +4,8 @@ archive:
   collection_id: 20246
 
 hostnames:
-  - 'sfdbi.org'
+  - sfdbi.org
+  - www.sfdbi.org
   - '${HEROKU_APP_NAME}.sfdbi.org'
 
 redirects:
